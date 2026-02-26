@@ -252,6 +252,17 @@ export default class CreateSessionUtil {
       //callWebHook(client, req, 'session-logged', { status: 'CONNECTED'});
       req.io.emit('session-logged', { status: true, session: client.session });
       startHelper(client, req);
+      // Run initial sync in background
+      try {
+        const { syncSession } = await import('../sync/syncService');
+        syncSession(client, req).catch((e: any) =>
+          req.logger.error(
+            'syncSession error: ' + (e && e.message ? e.message : e)
+          )
+        );
+      } catch (e) {
+        req.logger.debug('No sync service available: ' + e.message || e);
+      }
     } catch (error) {
       req.logger.error(error);
       req.io.emit('session-error', client.session);

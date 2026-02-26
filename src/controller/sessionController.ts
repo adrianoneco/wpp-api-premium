@@ -299,8 +299,18 @@ export async function logOutSession(req: Request, res: Response): Promise<any> {
     deleteSessionOnArray(req.session);
 
     setTimeout(async () => {
-      const pathUserData = config.customUserDataDir + req.session;
-      const pathTokens = __dirname + `../../../tokens/${req.session}.data.json`;
+      const pathUserData = path.resolve(
+        process.cwd(),
+        (config as any).dataDir,
+        'userDataDir',
+        req.session
+      );
+      const pathTokens = path.resolve(
+        process.cwd(),
+        (config as any).dataDir,
+        'tokens',
+        `${req.session}.data.json`
+      );
 
       if (fs.existsSync(pathUserData)) {
         await fs.promises.rm(pathUserData, {

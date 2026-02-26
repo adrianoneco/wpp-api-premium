@@ -36,9 +36,24 @@ import * as HealthCheck from '../middleware/healthCheck';
 import * as prometheusRegister from '../middleware/instrumentation';
 import statusConnection from '../middleware/statusConnection';
 import swaggerDocument from '../swagger.json';
+import { transformMessageIds } from '../util/messageUtils';
 
 const upload = multer(uploadConfig as any) as any;
 const routes: Router = Router();
+
+// Middleware to transform message ids in all JSON responses
+routes.use((req, res, next) => {
+  const oldJson = res.json;
+  res.json = function (body?: any) {
+    try {
+      const transformed = transformMessageIds(body);
+      return oldJson.call(this, transformed);
+    } catch (e) {
+      return oldJson.call(this, body);
+    }
+  } as any;
+  next();
+});
 
 // Generate Token
 routes.post('/api/:session/:secretkey/generate-token', encryptSession);
@@ -207,12 +222,6 @@ routes.post(
   verifyToken,
   statusConnection,
   MessageController.sendButtons
-);
-routes.post(
-  '/api/:session/send-list-message',
-  verifyToken,
-  statusConnection,
-  MessageController.sendListMessage
 );
 routes.post(
   '/api/:session/send-order-message',
@@ -957,7 +966,44 @@ routes.post('/api/:session/chatwoot', DeviceController.chatWoot);
 
 // Api Doc
 routes.use('/api-docs', swaggerUi.serve as any);
-routes.get('/api-docs', swaggerUi.setup(swaggerDocument) as any);
+routes.get('/api-docs', (req, res) => {
+  try {
+    let doc: any = JSON.parse(JSON.stringify(swaggerDocument));
+
+    // Remove deprecated operations
+    if (doc.paths && typeof doc.paths === 'object') {
+      for (const p of Object.keys(doc.paths)) {
+        const methods = doc.paths[p];
+        for (const m of Object.keys(methods)) {
+          if (methods[m] && methods[m].deprecated === true) {
+            delete methods[m];
+          }
+        }
+        if (Object.keys(methods).length === 0) delete doc.paths[p];
+      }
+    }
+
+    // Replace placeholders with environment values
+    const sessionEnv = process.env.SESSION_NAME || 'NERDWHATS_AMERICA';
+    const phoneEnv = process.env.PHONE_TEST_NUMBER || '5521999999999';
+    const secretEnv = process.env.SECRET_KEY || 'THISISMYSECURECODE';
+
+    try {
+      let docStr = JSON.stringify(doc);
+      // replace exact example strings
+      docStr = docStr.split('NERDWHATS_AMERICA').join(sessionEnv);
+      docStr = docStr.split('5521999999999').join(phoneEnv);
+      docStr = docStr.split('THISISMYSECURECODE').join(secretEnv);
+      doc = JSON.parse(docStr);
+    } catch (e) {
+      // if replacement fails, keep original doc
+    }
+
+    return swaggerUi.setup(doc)(req, res);
+  } catch (e) {
+    return swaggerUi.setup(swaggerDocument)(req, res);
+  }
+});
 
 //k8s
 routes.get('/healthz', HealthCheck.healthz);

@@ -26,8 +26,10 @@ const verifyToken = (req: Request, res: Response, next: NextFunction): any => {
   const secureToken = req.serverOptions.secretKey;
 
   const { session } = req.params;
+  // allow using environment SESSION_NAME when route doesn't provide session param
+  const sessionParam = session || process.env.SESSION_NAME || '';
   const { authorization: token } = req.headers;
-  if (!session)
+  if (!sessionParam)
     return res.status(401).send({ message: 'Session not informed' });
 
   try {
@@ -35,8 +37,8 @@ const verifyToken = (req: Request, res: Response, next: NextFunction): any => {
     let sessionDecrypt = '';
 
     try {
-      sessionDecrypt = session.split(':')[0];
-      tokenDecrypt = session
+      sessionDecrypt = sessionParam.split(':')[0];
+      tokenDecrypt = sessionParam
         .split(':')[1]
         .replace(/_/g, '/')
         .replace(/-/g, '+');
@@ -69,7 +71,8 @@ const verifyToken = (req: Request, res: Response, next: NextFunction): any => {
       tokenDecrypt,
       function (err, result) {
         if (result) {
-          req.session = formatSession(req.params.session);
+          // set request session to param or env fallback
+          req.session = formatSession(sessionParam);
           req.token = tokenDecrypt;
           req.client = clientsArray[req.session];
           next();

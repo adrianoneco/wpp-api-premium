@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+import path from 'path';
 import { defaultLogger } from '@wppconnect-team/wppconnect';
 import cors from 'cors';
 import express, { Express, NextFunction, Router } from 'express';
@@ -62,7 +62,13 @@ export function initServer(serverOptions: Partial<ServerOptions>): {
   app.use(cors());
   app.use(express.json({ limit: '50mb' }));
   app.use(express.urlencoded({ limit: '50mb', extended: true }));
-  app.use('/files', express.static('WhatsAppImages'));
+  const filesDir = (config as any).dataDir
+    ? String((config as any).dataDir)
+    : './data';
+  app.use(
+    '/files',
+    express.static(path.join(process.cwd(), filesDir, 'WhatsAppImages'))
+  );
   app.use(boolParser());
 
   if (config?.aws_s3?.access_key_id && config?.aws_s3?.secret_key) {
@@ -117,7 +123,7 @@ export function initServer(serverOptions: Partial<ServerOptions>): {
   });
 
   http.listen(PORT, () => {
-    logger.info(`Server is running on port: ${PORT}`);
+    logger.info(`Server is running on port: http://localhost:${PORT}`);
     logger.info(
       `\x1b[31m Visit ${serverOptions.host}:${PORT}/api-docs for Swagger docs`
     );

@@ -20,6 +20,7 @@ import * as path from 'path';
 import sanitize from 'sanitize-filename';
 
 import { logger } from '../../..';
+import config from '../../../config';
 import { SessionToken, TokenStore } from '../types';
 
 export interface FileTokenStoreOptions {
@@ -58,7 +59,9 @@ export const defaultFileTokenStoreOptions: FileTokenStoreOptions = {
   encodeFunction: JSON.stringify,
   encoding: 'utf8',
   fileExtension: '.data.json',
-  path: './tokens',
+  path: (config && (config as any).dataDir
+    ? path.join((config as any).dataDir, 'tokens')
+    : './tokens') as any,
 };
 
 export class FileTokenStore implements TokenStore {

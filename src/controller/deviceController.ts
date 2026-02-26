@@ -106,7 +106,18 @@ export async function showAllContacts(req: Request, res: Response) {
      }
    */
   try {
-    const contacts = await req.client.getAllContacts();
+    let contacts = await req.client.getAllContacts();
+    if (Array.isArray(contacts)) {
+      contacts = contacts.filter((c: any) => {
+        const id =
+          c && c.id
+            ? typeof c.id === 'string'
+              ? c.id
+              : c.id._serialized || c.id.id || ''
+            : '';
+        return String(id).endsWith('@c.us');
+      });
+    }
     res.status(200).json({ status: 'success', response: contacts });
   } catch (error) {
     req.logger.error(error);
@@ -1906,7 +1917,18 @@ export async function getAllContacts(req: Request, res: Response) {
      }
    */
   try {
-    const response = await req.client.getAllContacts();
+    let response = await req.client.getAllContacts();
+    if (Array.isArray(response)) {
+      response = response.filter((c: any) => {
+        const id =
+          c && c.id
+            ? typeof c.id === 'string'
+              ? c.id
+              : c.id._serialized || c.id.id || ''
+            : '';
+        return String(id).endsWith('@c.us');
+      });
+    }
 
     res.status(200).json({ status: 'success', response: response });
   } catch (error) {

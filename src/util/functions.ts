@@ -32,6 +32,7 @@ import config from '../config';
 import { convert } from '../mapper/index';
 import { ServerOptions } from '../types/ServerOptions';
 import { bucketAlreadyExists } from './bucketAlreadyExists';
+import { transformMessageIds } from './messageUtils';
 
 let mime: any, crypto: any; //, aws: any;
 if (config.webhook.uploadS3) {
@@ -138,6 +139,8 @@ export async function callWebHook(
         data.chatId ||
         (data.chatId ? data.chatId._serialized : null);
       data = Object.assign({ event: event, session: client.session }, data);
+      // transform message ids before sending to webhook
+      data = transformMessageIds(data);
       if (req.serverOptions.mapper.enable)
         data = await convert(req.serverOptions.mapper.prefix, data);
       api
@@ -328,15 +331,32 @@ function DaysBetween(StartDate: Date) {
 
 export function createFolders() {
   const __dirname = path.resolve(path.dirname(''));
-  const dirFiles = path.resolve(__dirname, 'WhatsAppImages');
+  const dataDir = path.resolve(
+    process.cwd(),
+    (config && (config as any).dataDir) || 'data'
+  );
+
+  const dirFiles = path.resolve(dataDir, 'WhatsAppImages');
   if (!fs.existsSync(dirFiles)) {
-    fs.mkdirSync(dirFiles);
+    fs.mkdirSync(dirFiles, { recursive: true });
   }
 
-  const dirUpload = path.resolve(__dirname, 'uploads');
+  const dirUpload = path.resolve(dataDir, 'uploads');
   if (!fs.existsSync(dirUpload)) {
-    fs.mkdirSync(dirUpload);
+    fs.mkdirSync(dirUpload, { recursive: true });
   }
+
+  const dirTokens = path.resolve(dataDir, 'tokens');
+  if (!fs.existsSync(dirTokens)) {
+    fs.mkdirSync(dirTokens, { recursive: true });
+  }
+
+  const dirUserData = path.resolve(dataDir, 'userDataDir');
+  if (!fs.existsSync(dirUserData)) {
+    fs.mkdirSync(dirUserData, { recursive: true });
+  }
+  const dirUploads = path.resolve(dataDir, 'uploads');
+  if (!fs.existsSync(dirUploads)) fs.mkdirSync(dirUploads, { recursive: true });
 }
 
 export function strToBool(s: string) {

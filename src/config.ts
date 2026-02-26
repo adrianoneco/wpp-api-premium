@@ -1,7 +1,16 @@
 import { ServerOptions } from './types/ServerOptions';
+import dotenv from 'dotenv';
+import path from 'path';
+import fs from 'fs';
+
+dotenv.config();
+
+const DATA_DIR = process.env.DATA_DIR || './data';
 
 export default {
-  secretKey: 'THISISMYSECURETOKEN',
+  secretKey: process.env.SECRET_KEY || 'THISISMYSECURETOKEN',
+  defaultSession: process.env.SESSION_NAME || 'default',
+  dataDir: DATA_DIR,
   host: 'http://localhost',
   port: '21465',
   deviceName: 'WppConnect',
@@ -9,7 +18,7 @@ export default {
   startAllSession: true,
   tokenStoreType: 'file',
   maxListeners: 15,
-  customUserDataDir: './userDataDir/',
+  customUserDataDir: path.join(DATA_DIR, 'userDataDir') + path.sep,
   webhook: {
     url: null,
     autoDownload: true,
@@ -69,6 +78,46 @@ export default {
       '--ignore-ssl-errors',
       '--ignore-certificate-errors-spki-list',
     ],
+    // Resolve executable path for Chromium/Chrome
+    puppeteerOptions: (() => {
+      const envPath =
+        process.env.CHROME_PATH || process.env.PUPPETEER_EXECUTABLE_PATH;
+      const baseArgs = [
+        '--disable-web-security',
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-translate',
+        '--hide-scrollbars',
+        '--mute-audio',
+      ];
+
+      if (envPath && fs.existsSync(envPath))
+        return {
+          executablePath: envPath,
+          args: baseArgs,
+          dumpio: true,
+          timeout: 60000,
+        };
+
+      const candidates = [
+        '/usr/bin/google-chrome-stable',
+        '/usr/bin/google-chrome',
+        '/usr/bin/chromium',
+        '/usr/bin/chromium-browser',
+        '/snap/bin/chromium',
+        '/usr/bin/chromium-browser-stable',
+      ];
+      for (const c of candidates)
+        if (fs.existsSync(c))
+          return {
+            executablePath: c,
+            args: baseArgs,
+            dumpio: true,
+            timeout: 60000,
+          };
+      return { args: baseArgs, dumpio: true, timeout: 60000 };
+    })(),
     /**
      * Example of configuring the linkPreview generator
      * If you set this to 'null', it will use global servers; however, you have the option to define your own server

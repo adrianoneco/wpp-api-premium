@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import swaggerAutogen from 'swagger-autogen';
-
+import process from 'process';
 import config from './config';
 
 const outputFile = './src/swagger.json';
@@ -94,7 +94,7 @@ const doc = {
     '@schemas': {
       session: {
         type: 'string',
-        schema: 'NERDWHATS_AMERICA',
+        schema: process.env.SESSION_NAME || 'default',
       },
     },
   },
