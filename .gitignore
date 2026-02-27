@@ -1,26 +1,41 @@
-/.env
+# Environment
+.env
+
+# Build output
 /dist
+
+# Dependencies
 /node_modules
-/swagger-docs
+/package-lock.json
+.yarn/install-state.gz
+/yarn-error.log
+
+# IDE
 /.vs
-/bin
+/.idea
+*.sln
+*.njsproj
+*.njsproj.user
+
+# Runtime data
+/data
+/tmp
 /log
-/obj/Debug
 /tokens
 /uploads
 /WhatsAppImages
-/wppconnect-server.njsproj
-/wppconnect-server.njsproj.user
-*.sln
-/package-lock.json
+/userDataDir
+/backupFolder
+
+# Generated
 *.png
 *.tgz
 *.zip
-/.idea
-userDataDir
-/yarn-error.log
-.yarn/install-state.gz
-backupFolder
-tokens/*
+*.mp3
+
+# WPPConnect
 wppconnect_tokens/*
-data/*
+
+# Misc
+/bin
+/obj
