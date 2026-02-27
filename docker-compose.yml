@@ -1,11 +1,12 @@
 services:
   postgres:
-    image: postgres:15
+    image: postgres:17
     container_name: postgres
     restart: unless-stopped
     environment:
+      TZ: 'America/Sao_Paulo'
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_PASSWORD: snbCPssPCXNLxPrPrWHXsp7pffVp9WVWzpJWVNn3HgHK7tTvPs97gwKChVbCw3v4
       POSTGRES_DB: postgres
     ports:
       - '5432:5432'
@@ -17,5 +18,24 @@ services:
       timeout: 5s
       retries: 5
 
+  redis:
+    image: redis:7
+    container_name: redis
+    restart: unless-stopped
+    environment:
+      TZ: 'America/Sao_Paulo'
+      REDIS_PASSWORD: efie8haiwiex3ShoshoiSo2agahnguv6ebeides8sairaephei8ooshie5oWeiSh
+    ports:
+      - '6379:6379'
+    volumes:
+      - redisdata:/data
+    command: ['sh', '-c', 'redis-server --requirepass "efie8haiwiex3ShoshoiSo2agahnguv6ebeides8sairaephei8ooshie5oWeiSh"']
+    healthcheck:
+      test: ['CMD-SHELL', 'redis-cli -a "efie8haiwiex3ShoshoiSo2agahnguv6ebeides8sairaephei8ooshie5oWeiSh" ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 volumes:
   pgdata:
+  redisdata:

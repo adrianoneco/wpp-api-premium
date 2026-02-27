@@ -19,6 +19,7 @@ import fs from 'fs';
 import mime from 'mime-types';
 import QRCode from 'qrcode';
 import { Logger } from 'winston';
+import path from 'path';
 
 import { version } from '../../package.json';
 import config from '../config';

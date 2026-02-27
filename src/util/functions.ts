@@ -164,12 +164,36 @@ export async function callWebHook(
 export async function autoDownload(client: any, req: any, message: any) {
   try {
     if (message && (message['mimetype'] || message.isMedia || message.isMMS)) {
-      const buffer = await client.decryptFile(message);
+      // Avoid calling decryptFile when critical media info is missing
+      let buffer: Buffer | null = null as any;
+      const hasMediaUrl = !!(message.mediaUrl || message['mediaUrl']);
+      const hasMediaKey = !!(message.mediaKey || message['mediaKey']);
+      if (!hasMediaUrl && !hasMediaKey) {
+        // Try downloadMedia fallback
+        if (typeof client.downloadMedia === 'function') {
+          try {
+            buffer = await client.downloadMedia(message);
+          } catch (err) {
+            req.logger && req.logger.warn && req.logger.warn('autoDownload: downloadMedia fallback failed');
+            return;
+          }
+        } else {
+          req.logger && req.logger.warn && req.logger.warn('autoDownload: message missing mediaUrl/mediaKey; skipping');
+          return;
+        }
+      } else {
+        buffer = await client.decryptFile(message);
+      }
       if (
         req.serverOptions.webhook.uploadS3 ||
         req.serverOptions?.websocket?.uploadS3
       ) {
         const hashName = crypto.randomBytes(24).toString('hex');
+
+        if (!buffer) {
+          req.logger && req.logger.warn && req.logger.warn('autoDownload: no buffer to upload');
+          return;
+        }
 
         if (
           !config?.aws_s3?.region ||
@@ -191,8 +215,7 @@ export async function autoDownload(client: any, req: any, message: any) {
           .toLowerCase();
         bucketName =
           bucketName.length < 3
-            ? bucketName +
-              `${Math.floor(Math.random() * (999 - 100 + 1)) + 100}`
+            ? bucketName + `${Math.floor(Math.random() * (999 - 100 + 1)) + 100}`
             : bucketName;
         const fileName = `${
           config.aws_s3.defaultBucketName ? client.session + '/' : ''
@@ -232,7 +255,7 @@ export async function autoDownload(client: any, req: any, message: any) {
 
         message.fileUrl = `https://${bucketName}.s3.amazonaws.com/${fileName}`;
       } else {
-        message.body = await buffer.toString('base64');
+        message.body = await (buffer as Buffer).toString('base64');
       }
     }
   } catch (e) {

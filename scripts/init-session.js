@@ -24,3 +24,15 @@ try {
   console.error('Failed to initialize session:', err.message);
   process.exit(1);
 }
+
+// Try to notify running server to start sessions (best-effort)
+try {
+  const { exec } = require('child_process');
+  const serverPort = process.env.PORT || '21465';
+  const secret = process.env.SECRET_KEY || 'THISISMYSECURETOKEN';
+  const url = `http://localhost:${serverPort}/api/${secret}/start-all`;
+  exec(`curl -s -X POST "${url}" || true`, (err, stdout, stderr) => {
+    if (err) return;
+    if (stdout) console.log('Notified server to start sessions');
+  });
+} catch (e) {}

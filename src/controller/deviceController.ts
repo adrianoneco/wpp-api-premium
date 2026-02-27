@@ -1908,13 +1908,23 @@ export async function getContact(req: Request, res: Response) {
 export async function getAllContacts(req: Request, res: Response) {
   /**
    * #swagger.tags = ["Contact"]
-     #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
-     #swagger.parameters["session"] = {
-      schema: 'NERDWHATS_AMERICA'
-     }
+   * #swagger.summary = 'Listar contatos'
+   * #swagger.description = 'Retorna todos os contatos do WhatsApp (apenas contatos de usuário, ex. @c.us).'
+   * #swagger.autoBody=false
+   * #swagger.security = [{
+   *        "bearerAuth": []
+   * }]
+   * #swagger.parameters["session"] = { schema: 'NERDWHATS_AMERICA' }
+   * #swagger.responses[200] = {
+   *   description: 'Lista de contatos retornada com sucesso',
+   *   schema: {
+   *     type: 'object',
+   *     properties: {
+   *       status: { type: 'string' },
+   *       response: { type: 'array', items: { type: 'object' } }
+   *     }
+   *   }
+   * }
    */
   try {
     let response = await req.client.getAllContacts();

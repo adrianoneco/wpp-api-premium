@@ -66,12 +66,12 @@ export default class CreateSessionUtil {
           { tokenStore: myTokenStore },
           client.config.proxy
             ? {
-                proxy: {
-                  url: client.config.proxy?.url,
-                  username: client.config.proxy?.username,
-                  password: client.config.proxy?.password,
-                },
-              }
+              proxy: {
+                url: client.config.proxy?.url,
+                username: client.config.proxy?.username,
+                password: client.config.proxy?.password,
+              },
+            }
             : {},
           req.serverOptions.createOptions,
           {
@@ -80,18 +80,15 @@ export default class CreateSessionUtil {
             deviceName:
               client.config.phone == undefined // bug when using phone code this shouldn't be passed (https://github.com/wppconnect-team/wppconnect-server/issues/1687#issuecomment-2099357874)
                 ? client.config?.deviceName ||
-                  req.serverOptions.deviceName ||
-                  'WppConnect'
+                req.serverOptions.deviceName ||
+                'WppConnect'
                 : undefined,
             poweredBy:
               client.config.phone == undefined // bug when using phone code this shouldn't be passed (https://github.com/wppconnect-team/wppconnect-server/issues/1687#issuecomment-2099357874)
                 ? client.config?.poweredBy ||
-                  req.serverOptions.poweredBy ||
-                  'WPPConnect-Server'
+                req.serverOptions.poweredBy ||
+                'WPPConnect-Server'
                 : undefined,
-            catchLinkCode: (code: string) => {
-              this.exportPhoneCode(req, client.config.phone, code, client, res);
-            },
             catchQR: (
               base64Qr: any,
               asciiQR: any,
@@ -124,7 +121,7 @@ export default class CreateSessionUtil {
                   session: client.session,
                 });
                 req.logger.info(statusFind + '\n\n');
-              } catch (error) {}
+              } catch (error) { }
             },
           }
         )
@@ -164,41 +161,7 @@ export default class CreateSessionUtil {
     await this.createSessionUtil(req, clientsArray, session, res);
   }
 
-  exportPhoneCode(
-    req: any,
-    phone: any,
-    phoneCode: any,
-    client: WhatsAppServer,
-    res?: any
-  ) {
-    eventEmitter.emit(`phoneCode-${client.session}`, phoneCode, client);
-
-    Object.assign(client, {
-      status: 'PHONECODE',
-      phoneCode: phoneCode,
-      phone: phone,
-    });
-
-    req.io.emit('phoneCode', {
-      data: phoneCode,
-      phone: phone,
-      session: client.session,
-    });
-
-    callWebHook(client, req, 'phoneCode', {
-      phoneCode: phoneCode,
-      phone: phone,
-      session: client.session,
-    });
-
-    if (res && !res._headerSent)
-      res.status(200).json({
-        status: 'phoneCode',
-        phone: phone,
-        phoneCode: phoneCode,
-        session: client.session,
-      });
-  }
+  
 
   exportQR(
     req: any,
@@ -260,8 +223,8 @@ export default class CreateSessionUtil {
             'syncSession error: ' + (e && e.message ? e.message : e)
           )
         );
-      } catch (e) {
-        req.logger.debug('No sync service available: ' + e.message || e);
+      } catch (e: any) {
+        req.logger.debug('No sync service available: ' + (e && e.message ? e.message : e));
       }
     } catch (error) {
       req.logger.error(error);

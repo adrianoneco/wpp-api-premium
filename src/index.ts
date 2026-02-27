@@ -22,18 +22,25 @@ import { createServer } from 'http';
 import mergeDeep from 'merge-deep';
 import process from 'process';
 import { Server as Socket } from 'socket.io';
+import axios from 'axios';
+import { shouldSendWebhook, sendWebhook } from './util/webhook';
+import { formatEventLog } from './util/logFormat';
 import { Logger } from 'winston';
+
+import fs from 'fs';
 
 import { version } from '../package.json';
 import config from './config';
 import { convert } from './mapper/index';
 import routes from './routes';
+import storageRouter from './routes/storage';
 import { ServerOptions } from './types/ServerOptions';
 import {
   createFolders,
   setMaxListners,
   startAllSessions,
 } from './util/functions';
+import { ensureSchema } from './sync/syncService';
 import { createLogger } from './util/logger';
 
 //require('dotenv').config();
@@ -105,6 +112,8 @@ export function initServer(serverOptions: Partial<ServerOptions>): {
   });
 
   app.use(routes);
+  // storage files (protected by x-storage-key header or ?key=)
+  app.use('/storage', storageRouter as any);
 
   createFolders();
   const http = createServer(app);
@@ -114,13 +123,120 @@ export function initServer(serverOptions: Partial<ServerOptions>): {
     },
   });
 
+  // start queue workers
+  import('./queues/worker')
+    .then(() => {})
+    .catch((err) => logger.warn('Failed to start queue workers: ' + (err as any).message));
+
   io.on('connection', (sock) => {
     logger.info(`ID: ${sock.id} entrou`);
 
     sock.on('disconnect', () => {
       logger.info(`ID: ${sock.id} saiu`);
     });
+
+    const API_PORT = process.env.PORT || serverOptions.port || 21465;
+    const API_HOST = `http://localhost:${API_PORT}`;
+
+    // Generic API proxy using dot-separated event name: 'api.request'
+    sock.on('api.request', async (req: any) => {
+      const { id, method = 'get', path = '/', data = {}, headers = {} } = req || {};
+      logger.info(formatEventLog(req?.session || null, 'websocket', `Received api.request ${path}`));
+      try {
+        const url = `${API_HOST}${path}`;
+        const resp = await axios.request({ method, url, data, headers });
+        sock.emit('api.response', { id, status: resp.status, data: resp.data });
+        logger.info(formatEventLog(req?.session || null, 'websocket', `Responded api.request ${path} status=${resp.status}`));
+        if (shouldSendWebhook('api.request')) await sendWebhook('api.request', { id, method, path, data }, logger);
+      } catch (err: any) {
+        sock.emit('api.response', { id, status: err?.response?.status || 500, error: err?.response?.data || err.message });
+        logger.warn(formatEventLog(req?.session || null, 'websocket', `api.request error ${path}: ${err?.message || err}`));
+        if (shouldSendWebhook('api.request')) await sendWebhook('api.request', { id, error: err?.response?.data || err.message }, logger);
+      }
+    });
+
+    // messages.upsert -> POST /api/:session/send-message
+    sock.on('messages.upsert', async (payload: any) => {
+      const { session, message } = payload || {};
+      logger.info(formatEventLog(session || null, 'websocket', `Received messages.upsert`));
+      if (!session || !message) return sock.emit('messages.upsert.response', { ok: false, error: 'missing session or message' });
+      try {
+        const url = `${API_HOST}/api/${session}/send-message`;
+        const resp = await axios.post(url, message, { headers: { 'Content-Type': 'application/json' } });
+        sock.emit('messages.upsert.response', { ok: true, data: resp.data });
+        logger.info(formatEventLog(session || null, 'websocket', `messages.upsert responded`));
+        if (shouldSendWebhook('messages.upsert')) await sendWebhook('messages.upsert', { session, message, response: resp.data }, logger);
+      } catch (err: any) {
+        sock.emit('messages.upsert.response', { ok: false, error: err?.response?.data || err.message });
+        logger.warn(formatEventLog(session || null, 'websocket', `messages.upsert error: ${err?.message || err}`));
+        if (shouldSendWebhook('messages.upsert')) await sendWebhook('messages.upsert', { session, message, error: err?.response?.data || err.message }, logger);
+      }
+    });
+
+    // sessions.start -> POST /api/:session/start-session
+    sock.on('sessions.start', async (payload: any) => {
+      const { session, body = {} } = payload || {};
+      logger.info(formatEventLog(session || null, 'websocket', `Received sessions.start`));
+      if (!session) return sock.emit('sessions.start.response', { ok: false, error: 'missing session' });
+      try {
+        const url = `${API_HOST}/api/${session}/start-session`;
+        const resp = await axios.post(url, body, { headers: { 'Content-Type': 'application/json' } });
+        sock.emit('sessions.start.response', { ok: true, data: resp.data });
+        logger.info(formatEventLog(session || null, 'websocket', `sessions.start responded`));
+        if (shouldSendWebhook('sessions.start')) await sendWebhook('sessions.start', { session, body, response: resp.data }, logger);
+      } catch (err: any) {
+        sock.emit('sessions.start.response', { ok: false, error: err?.response?.data || err.message });
+        logger.warn(formatEventLog(session || null, 'websocket', `sessions.start error: ${err?.message || err}`));
+        if (shouldSendWebhook('sessions.start')) await sendWebhook('sessions.start', { session, body, error: err?.response?.data || err.message }, logger);
+      }
+    });
+
+    // sessions.close -> POST /api/:session/close-session
+    sock.on('sessions.close', async (payload: any) => {
+      const { session } = payload || {};
+      logger.info(formatEventLog(session || null, 'websocket', `Received sessions.close`));
+      if (!session) return sock.emit('sessions.close.response', { ok: false, error: 'missing session' });
+      try {
+        const url = `${API_HOST}/api/${session}/close-session`;
+        const resp = await axios.post(url);
+        sock.emit('sessions.close.response', { ok: true, data: resp.data });
+        logger.info(formatEventLog(session || null, 'websocket', `sessions.close responded`));
+        if (shouldSendWebhook('sessions.close')) await sendWebhook('sessions.close', { session, response: resp.data }, logger);
+      } catch (err: any) {
+        sock.emit('sessions.close.response', { ok: false, error: err?.response?.data || err.message });
+        logger.warn(formatEventLog(session || null, 'websocket', `sessions.close error: ${err?.message || err}`));
+        if (shouldSendWebhook('sessions.close')) await sendWebhook('sessions.close', { session, error: err?.response?.data || err.message }, logger);
+      }
+    });
+
+    // sessions.getAll -> GET /api/:secretkey/show-all-sessions
+    sock.on('sessions.getAll', async () => {
+      logger.info(formatEventLog(null, 'websocket', 'Received sessions.getAll'));
+      try {
+        const url = `${API_HOST}/api/${serverOptions.secretKey}/show-all-sessions`;
+        const resp = await axios.get(url);
+        sock.emit('sessions.getAll.response', { ok: true, data: resp.data });
+        logger.info(formatEventLog(null, 'websocket', 'sessions.getAll responded'));
+        if (shouldSendWebhook('sessions.getAll')) await sendWebhook('sessions.getAll', { response: resp.data }, logger);
+      } catch (err: any) {
+        sock.emit('sessions.getAll.response', { ok: false, error: err?.response?.data || err.message });
+        logger.warn(formatEventLog(null, 'websocket', `sessions.getAll error: ${err?.message || err}`));
+        if (shouldSendWebhook('sessions.getAll')) await sendWebhook('sessions.getAll', { error: err?.response?.data || err.message }, logger);
+      }
+    });
   });
+
+  // Wrap io.emit so internal server emits (req.io.emit) are also forwarded to webhook when enabled
+  const originalEmit = (io as any).emit.bind(io);
+  (io as any).emit = async (event: string, ...args: any[]) => {
+    originalEmit(event, ...args);
+    try {
+      logger.info(formatEventLog(args?.[0]?.session || null, 'websocket', `Emitted ${event}`));
+      if (shouldSendWebhook(event)) await sendWebhook(event, args.length === 1 ? args[0] : args, logger);
+    } catch (err) {
+      // ignore webhook errors
+    }
+  };
 
   http.listen(PORT, () => {
     logger.info(`Server is running on port: http://localhost:${PORT}`);
@@ -129,7 +245,57 @@ export function initServer(serverOptions: Partial<ServerOptions>): {
     );
     logger.info(`WPPConnect-Server version: ${version}`);
 
-    if (serverOptions.startAllSession) startAllSessions(serverOptions, logger);
+    // Try to create/update DB schema on startup (best-effort)
+    setImmediate(async () => {
+      try {
+        const ok2 = await ensureSchema(logger);
+        if (ok2) logger.info('Postgres schema ensured (legacy)');
+      } catch (e) {
+        logger.warn('Error ensuring Postgres schema: ' + (e as any).message || e);
+      }
+      if (serverOptions.startAllSession) startAllSessions(serverOptions, logger);
+    });
+
+    // Auto-start single session from env when `SESSION_NAME` is set
+    const AUTO_SESSION = process.env.SESSION_NAME || '';
+    if (AUTO_SESSION) {
+      try {
+        const dataDir = (config as any).dataDir || 'data';
+        const tokenPath = path.join(process.cwd(), dataDir, 'tokens', `${AUTO_SESSION}.data.json`);
+        if (!fs.existsSync(tokenPath)) {
+          fs.mkdirSync(path.dirname(tokenPath), { recursive: true });
+          fs.writeFileSync(tokenPath, JSON.stringify({ createdAt: new Date().toISOString() }, null, 2));
+          logger.info(`Created session token file for ${AUTO_SESSION}`);
+        }
+
+        const reqLike: any = {
+          serverOptions,
+          logger,
+          io,
+          body: {
+            webhook: process.env.WEBHOOK_URL || serverOptions.webhook?.url || '',
+            phone: process.env.PHONE_NUMBER || process.env.PHONE_TEST_NUMBER || undefined,
+          },
+          session: AUTO_SESSION,
+        };
+
+        // start in background and log progress (dynamic import to avoid circular deps)
+        logger.info(`Auto-start: invoking opendata for session ${AUTO_SESSION}`);
+        setImmediate(async () => {
+          try {
+            const mod = await import('./util/createSessionUtil');
+            const Creator = (mod as any).default;
+            const creator = new Creator();
+            await creator.opendata(reqLike, AUTO_SESSION);
+            logger.info(`Auto-start: opendata finished for session ${AUTO_SESSION}`);
+          } catch (e: any) {
+            logger.error(`Auto-start session error: ${e?.message || e}`);
+          }
+        });
+      } catch (e: any) {
+        logger.error('Auto-start setup failed: ' + (e?.message || e));
+      }
+    }
   });
 
   if (config.log.level === 'error' || config.log.level === 'warn') {

@@ -44,7 +44,7 @@ const routes: Router = Router();
 // Middleware to transform message ids in all JSON responses
 routes.use((req, res, next) => {
   const oldJson = res.json;
-  res.json = function (body?: any) {
+  res.json = function (this: any, body?: any) {
     try {
       const transformed = transformMessageIds(body);
       return oldJson.call(this, transformed);
@@ -999,9 +999,9 @@ routes.get('/api-docs', (req, res) => {
       // if replacement fails, keep original doc
     }
 
-    return swaggerUi.setup(doc)(req, res);
+    return (swaggerUi.setup(doc) as any)(req, res);
   } catch (e) {
-    return swaggerUi.setup(swaggerDocument)(req, res);
+    return (swaggerUi.setup(swaggerDocument) as any)(req, res);
   }
 });
 
