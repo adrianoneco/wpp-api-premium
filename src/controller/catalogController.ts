@@ -21,9 +21,6 @@ export async function getProducts(req: Request, res: Response) {
   /**
    * #swagger.tags = ["Catalog & Bussiness"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -62,9 +59,6 @@ export async function getProductById(req: Request, res: Response) {
   /**
    * #swagger.tags = ["Catalog & Bussiness"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -99,9 +93,6 @@ export async function editProduct(req: Request, res: Response) {
   /**
    * #swagger.tags = ["Catalog & Bussiness"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -152,9 +143,6 @@ export async function delProducts(req: Request, res: Response) {
   /**
    * #swagger.tags = ["Catalog & Bussiness"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -201,9 +189,6 @@ export async function changeProductImage(req: Request, res: Response) {
   /**
    * #swagger.tags = ["Catalog & Bussiness"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -253,9 +238,6 @@ export async function addProduct(req: Request, res: Response) {
   /**
    * #swagger.tags = ["Catalog & Bussiness"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -332,9 +314,6 @@ export async function addProductImage(req: Request, res: Response) {
   /**
    * #swagger.tags = ["Catalog & Bussiness"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -383,9 +362,6 @@ export async function removeProductImage(req: Request, res: Response) {
   /**
    * #swagger.tags = ["Catalog & Bussiness"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -434,9 +410,6 @@ export async function getCollections(req: Request, res: Response) {
   /**
    * #swagger.tags = ["Catalog & Bussiness"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -476,9 +449,6 @@ export async function createCollection(req: Request, res: Response) {
   /**
    * #swagger.tags = ["Catalog & Bussiness"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -527,9 +497,6 @@ export async function editCollection(req: Request, res: Response) {
   /**
    * #swagger.tags = ["Catalog & Bussiness"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -580,9 +547,6 @@ export async function deleteCollection(req: Request, res: Response) {
   /**
    * #swagger.tags = ["Catalog & Bussiness"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -629,9 +593,6 @@ export async function setProductVisibility(req: Request, res: Response) {
   /**
    * #swagger.tags = ["Catalog & Bussiness"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -687,9 +648,6 @@ export async function updateCartEnabled(req: Request, res: Response) {
   /**
    * #swagger.tags = ["Catalog & Bussiness"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -736,9 +694,6 @@ export async function sendLinkCatalog(req: Request, res: Response) {
   /**
    * #swagger.tags = ["Messages"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }

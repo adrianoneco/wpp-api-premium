@@ -171,6 +171,22 @@ async function handleProfilePic(job: Job, client: any, session: string) {
   const { contactId } = job.data;
   if (!contactId) throw new Error('Missing contactId');
 
+  const dir = path.join(STORAGE_DIR, 'profile-pics');
+  const filename = contactId.replace(/[@.:]/g, '_') + '.jpg';
+  const filePath = path.join(dir, filename);
+
+  // Skip if already downloaded
+  if (fs.existsSync(filePath) && fs.statSync(filePath).size > 0) {
+    logger.info(formatEventLog(session, 'download', `Profile pic already exists for ${contactId}, skipping`));
+    // Ensure DB is updated even if file existed before
+    try {
+      const mongo = require('../util/db/mongo');
+      const { Contact } = await mongo.getModels(session);
+      await Contact.updateOne({ wa_id: contactId }, { $set: { profile_pic: filePath } });
+    } catch {}
+    return;
+  }
+
   const pic = await client.getProfilePicFromServer(contactId);
   if (!pic || (!pic.imgFull && !pic.eurl)) {
     logger.info(formatEventLog(session, 'download', `No profile pic for ${contactId}`));
@@ -180,10 +196,7 @@ async function handleProfilePic(job: Job, client: any, session: string) {
   const url = pic.imgFull || pic.eurl;
   const resp = await axios.get(url, { responseType: 'arraybuffer', timeout: 30000 });
 
-  const dir = path.join(STORAGE_DIR, 'profile-pics');
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-  const filename = contactId.replace(/[@.:]/g, '_') + '.jpg';
-  const filePath = path.join(dir, filename);
   fs.writeFileSync(filePath, resp.data);
 
   // Update contact in MongoDB
@@ -199,6 +212,26 @@ async function handleProfilePic(job: Job, client: any, session: string) {
 async function handleMediaDownload(job: Job, client: any, session: string) {
   const { msgId } = job.data;
   if (!msgId) throw new Error('Missing msgId');
+
+  const dir = path.join(STORAGE_DIR, 'media');
+  const safeId = String(msgId).replace(/[^a-zA-Z0-9_-]/g, '_');
+
+  // Check if any file for this message already exists on disk
+  if (fs.existsSync(dir)) {
+    const existing = fs.readdirSync(dir).find((f) => f.startsWith(safeId + '.'));
+    if (existing) {
+      const filePath = path.join(dir, existing);
+      if (fs.statSync(filePath).size > 0) {
+        logger.info(formatEventLog(session, 'download', `Media already exists for ${msgId}, skipping`));
+        try {
+          const mongo = require('../util/db/mongo');
+          const { Message } = await mongo.getModels(session);
+          await Message.updateOne({ wa_id: msgId }, { $set: { media_path: filePath } });
+        } catch {}
+        return;
+      }
+    }
+  }
 
   // Retrieve the message object from WhatsApp
   const msg = await client.getMessageById(msgId);
@@ -226,9 +259,7 @@ async function handleMediaDownload(job: Job, client: any, session: string) {
   const mime = msg.mimetype || '';
   ext = mime.split('/').pop()?.split(';')[0] || 'bin';
 
-  const dir = path.join(STORAGE_DIR, 'media');
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-  const safeId = String(msgId).replace(/[^a-zA-Z0-9_-]/g, '_');
   const filename = `${safeId}.${ext}`;
   const filePath = path.join(dir, filename);
   fs.writeFileSync(filePath, buffer);

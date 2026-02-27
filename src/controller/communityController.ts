@@ -20,9 +20,6 @@ export async function createCommunity(req: Request, res: Response) {
   /**
        #swagger.tags = ["Community"]
        #swagger.autoBody=false
-       #swagger.security = [{
-              "bearerAuth": []
-       }]
        #swagger.parameters["session"] = {
         schema: 'NERDWHATS_AMERICA'
        }
@@ -75,9 +72,6 @@ export async function deactivateCommunity(req: Request, res: Response) {
   /**
          #swagger.tags = ["Community"]
          #swagger.autoBody=false
-         #swagger.security = [{
-                "bearerAuth": []
-         }]
          #swagger.parameters["session"] = {
           schema: 'NERDWHATS_AMERICA'
          }
@@ -122,9 +116,6 @@ export async function addSubgroupsCommunity(req: Request, res: Response) {
   /**
     #swagger.tags = ["Community"]
     #swagger.autoBody=false
-    #swagger.security = [{
-            "bearerAuth": []
-    }]
     #swagger.parameters["session"] = {
     schema: 'NERDWHATS_AMERICA'
     }
@@ -171,9 +162,6 @@ export async function removeSubgroupsCommunity(req: Request, res: Response) {
   /**
      #swagger.tags = ["Community"]
     #swagger.autoBody=false
-    #swagger.security = [{
-            "bearerAuth": []
-    }]
     #swagger.parameters["session"] = {
     schema: 'NERDWHATS_AMERICA'
     }
@@ -220,9 +208,6 @@ export async function demoteCommunityParticipant(req: Request, res: Response) {
   /**
     #swagger.tags = ["Community"]
     #swagger.autoBody=false
-    #swagger.security = [{
-            "bearerAuth": []
-    }]
     #swagger.parameters["session"] = {
     schema: 'NERDWHATS_AMERICA'
     }
@@ -272,9 +257,6 @@ export async function promoteCommunityParticipant(req: Request, res: Response) {
   /**
     #swagger.tags = ["Community"]
     #swagger.autoBody=false
-    #swagger.security = [{
-            "bearerAuth": []
-    }]
     #swagger.parameters["session"] = {
     schema: 'NERDWHATS_AMERICA'
     }
@@ -324,9 +306,6 @@ export async function getCommunityParticipants(req: Request, res: Response) {
   /**
     #swagger.tags = ["Community"]
     #swagger.autoBody=false
-    #swagger.security = [{
-            "bearerAuth": []
-    }]
     #swagger.parameters["session"] = {
         schema: 'NERDWHATS_AMERICA'
     }

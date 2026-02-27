@@ -47,9 +47,6 @@ export async function setProfileName(req: Request, res: Response) {
   /**
    * #swagger.tags = ["Profile"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -98,9 +95,6 @@ export async function showAllContacts(req: Request, res: Response) {
   /**
    * #swagger.tags = ["Contacts"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -135,9 +129,6 @@ export async function getAllChats(req: Request, res: Response) {
    * #swagger.summary = 'Deprecated in favor of 'list-chats'
    * #swagger.deprecated = true
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -160,9 +151,6 @@ export async function listChats(req: Request, res: Response) {
    * #swagger.tags = ["Chat"]
    * #swagger.summary = 'Retrieve a list of chats'
    * #swagger.description = 'This body is not required. Not sent body to get all chats or filter.'
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -256,9 +244,6 @@ export async function getAllChatsWithMessages(req: Request, res: Response) {
    * #swagger.summary = 'Deprecated in favor of list-chats'
    * #swagger.deprecated = true
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -282,9 +267,6 @@ export async function getAllMessagesInChat(req: Request, res: Response) {
   /**
    * #swagger.tags = ["Chat"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -333,9 +315,6 @@ export async function getAllNewMessages(req: Request, res: Response) {
   /**
    * #swagger.tags = ["Chat"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -357,9 +336,6 @@ export async function getAllUnreadMessages(req: Request, res: Response) {
   /**
    * #swagger.tags = ["Chat"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -381,9 +357,6 @@ export async function getChatById(req: Request, res: Response) {
   /**
    * #swagger.tags = ["Chat"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -420,9 +393,6 @@ export async function getMessageById(req: Request, res: Response) {
   /**
    * #swagger.tags = ["Chat"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -447,9 +417,6 @@ export async function getBatteryLevel(req: Request, res: Response) {
   /**
    * #swagger.tags = ["Misc"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -471,9 +438,6 @@ export async function getHostDevice(req: Request, res: Response) {
   /**
    * #swagger.tags = ["Misc"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -500,9 +464,6 @@ export async function getPhoneNumber(req: Request, res: Response) {
   /**
    * #swagger.tags = ["Misc"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -526,9 +487,6 @@ export async function getBlockList(req: Request, res: Response) {
   /**
    * #swagger.tags = ["Misc"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -555,9 +513,6 @@ export async function deleteChat(req: Request, res: Response) {
   /**
    * #swagger.tags = ["Chat"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -601,9 +556,6 @@ export async function deleteAllChats(req: Request, res: Response) {
   /**
    * #swagger.tags = ["Chat"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -628,9 +580,6 @@ export async function clearChat(req: Request, res: Response) {
   /**
    * #swagger.tags = ["Chat"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -676,9 +625,6 @@ export async function clearAllChats(req: Request, res: Response) {
   /**
    * #swagger.tags = ["Chat"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -701,9 +647,6 @@ export async function archiveChat(req: Request, res: Response) {
   /**
    * #swagger.tags = ["Chat"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -750,9 +693,6 @@ export async function archiveAllChats(req: Request, res: Response) {
   /**
    * #swagger.tags = ["Chat"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -778,9 +718,6 @@ export async function getAllChatsArchiveds(req: Request, res: Response) {
    * #swagger.tags = ["Chat"]
    * #swagger.description = 'Retrieves all archived chats.'
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -807,9 +744,6 @@ export async function deleteMessage(req: Request, res: Response) {
   /**
    * #swagger.tags = ["Messages"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -878,9 +812,6 @@ export async function reactMessage(req: Request, res: Response) {
   /**
    * #swagger.tags = ["Messages"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -930,9 +861,6 @@ export async function reply(req: Request, res: Response) {
    * #swagger.deprecated=true
      #swagger.tags = ["Messages"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -980,9 +908,6 @@ export async function forwardMessages(req: Request, res: Response) {
   /**
      #swagger.tags = ["Messages"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -1035,9 +960,6 @@ export async function markUnseenMessage(req: Request, res: Response) {
   /**
      #swagger.tags = ["Messages"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -1083,9 +1005,6 @@ export async function blockContact(req: Request, res: Response) {
   /**
      #swagger.tags = ["Misc"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -1131,9 +1050,6 @@ export async function unblockContact(req: Request, res: Response) {
   /**
      #swagger.tags = ["Misc"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -1179,9 +1095,6 @@ export async function pinChat(req: Request, res: Response) {
   /**
      #swagger.tags = ["Chat"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -1241,9 +1154,6 @@ export async function setProfilePic(req: Request, res: Response) {
   /**
      #swagger.tags = ["Profile"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -1284,9 +1194,6 @@ export async function getUnreadMessages(req: Request, res: Response) {
      #swagger.deprecated=true
      #swagger.tags = ["Messages"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -1306,9 +1213,6 @@ export async function getChatIsOnline(req: Request, res: Response) {
   /**
      #swagger.tags = ["Chat"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -1334,9 +1238,6 @@ export async function getLastSeen(req: Request, res: Response) {
   /**
      #swagger.tags = ["Chat"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -1363,9 +1264,6 @@ export async function getListMutes(req: Request, res: Response) {
   /**
      #swagger.tags = ["Chat"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -1393,9 +1291,6 @@ export async function loadAndGetAllMessagesInChat(req: Request, res: Response) {
      #swagger.deprecated=true
      #swagger.tags = ["Chat"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -1429,9 +1324,6 @@ export async function getMessages(req: Request, res: Response) {
   /**
      #swagger.tags = ["Messages"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -1469,9 +1361,6 @@ export async function sendContactVcard(req: Request, res: Response) {
   /**
      #swagger.tags = ["Messages"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -1528,9 +1417,6 @@ export async function sendMute(req: Request, res: Response) {
   /**
      #swagger.tags = ["Chat"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -1582,9 +1468,6 @@ export async function sendSeen(req: Request, res: Response) {
   /**
      #swagger.tags = ["Chat"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -1630,9 +1513,6 @@ export async function setChatState(req: Request, res: Response) {
      #swagger.deprecated=true
      #swagger.tags = ["Chat"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -1684,9 +1564,6 @@ export async function setTemporaryMessages(req: Request, res: Response) {
   /**
      #swagger.tags = ["Messages"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -1738,9 +1615,6 @@ export async function setTyping(req: Request, res: Response) {
   /**
      #swagger.tags = ["Chat"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -1790,9 +1664,6 @@ export async function setRecording(req: Request, res: Response) {
   /**
      #swagger.tags = ["Chat"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -1847,9 +1718,6 @@ export async function checkNumberStatus(req: Request, res: Response) {
   /**
      #swagger.tags = ["Misc"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -1879,9 +1747,6 @@ export async function getContact(req: Request, res: Response) {
   /**
      #swagger.tags = ["Chat"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -1912,7 +1777,6 @@ export async function getAllContacts(req: Request, res: Response) {
    * #swagger.description = 'Retorna todos os contatos do WhatsApp (apenas contatos de usuário, ex. @c.us).'
    * #swagger.autoBody=false
    * #swagger.security = [{
-   *        "bearerAuth": []
    * }]
    * #swagger.parameters["session"] = { schema: 'NERDWHATS_AMERICA' }
    * #swagger.responses[200] = {
@@ -1956,9 +1820,6 @@ export async function getNumberProfile(req: Request, res: Response) {
      #swagger.deprecated=true
      #swagger.tags = ["Chat"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -1988,9 +1849,6 @@ export async function getProfilePicFromServer(req: Request, res: Response) {
   /**
      #swagger.tags = ["Contact"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -2021,9 +1879,6 @@ export async function getStatus(req: Request, res: Response) {
   /**
      #swagger.tags = ["Contact"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -2050,9 +1905,6 @@ export async function setProfileStatus(req: Request, res: Response) {
   /**
      #swagger.tags = ["Profile"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -2100,9 +1952,6 @@ export async function rejectCall(req: Request, res: Response) {
   /**
      #swagger.tags = ["Misc"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -2145,9 +1994,6 @@ export async function starMessage(req: Request, res: Response) {
   /**
      #swagger.tags = ["Messages"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -2193,9 +2039,6 @@ export async function getReactions(req: Request, res: Response) {
   /**
      #swagger.tags = ["Messages"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -2222,9 +2065,6 @@ export async function getVotes(req: Request, res: Response) {
   /**
      #swagger.tags = ["Messages"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -2249,9 +2089,6 @@ export async function chatWoot(req: Request, res: Response): Promise<any> {
      #swagger.tags = ["Misc"]
      #swagger.description = 'You can point your Chatwoot to this route so that it can perform functions.'
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -2353,9 +2190,6 @@ export async function getPlatformFromMessage(req: Request, res: Response) {
   /**
    * #swagger.tags = ["Misc"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }

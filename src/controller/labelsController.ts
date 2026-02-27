@@ -20,9 +20,6 @@ export async function addNewLabel(req: Request, res: Response) {
   /**
      #swagger.tags = ["Labels"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -77,9 +74,6 @@ export async function addOrRemoveLabels(req: Request, res: Response) {
   /**
      #swagger.tags = ["Labels"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -146,9 +140,6 @@ export async function getAllLabels(req: Request, res: Response) {
   /**
      #swagger.tags = ["Labels"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -169,9 +160,6 @@ export async function deleteAllLabels(req: Request, res: Response) {
   /**
      #swagger.tags = ["Labels"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -192,9 +180,6 @@ export async function deleteLabel(req: Request, res: Response) {
   /**
      #swagger.tags = ["Labels"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }

@@ -53,9 +53,6 @@ export async function getBusinessProfilesProducts(req: Request, res: Response) {
   /**
    * #swagger.tags = ["Catalog & Bussiness"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -82,9 +79,6 @@ export async function getOrderbyMsg(req: Request, res: Response) {
   /**
    * #swagger.tags = ["Catalog & Bussiness"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }

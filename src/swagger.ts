@@ -28,13 +28,6 @@ const doc = {
       'Welcome to the wppconnect-server API documentation. This API provides a set of endpoints to interact with the wppconnect-server application, allowing you to build integrations and automate interactions with WhatsApp.',
   },
   host: `${config.host}:${config.port}`,
-  securityDefinitions: {
-    bearerAuth: {
-      type: 'http',
-      scheme: 'bearer',
-      bearerFormat: 'JWT',
-    },
-  },
   tags: [
     {
       name: 'Auth',

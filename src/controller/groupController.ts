@@ -27,9 +27,6 @@ export async function getAllGroups(req: Request, res: Response) {
      #swagger.deprecated = true
      #swagger.summary = 'Deprecated in favor of 'list-chats'
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -50,9 +47,6 @@ export async function joinGroupByCode(req: Request, res: Response) {
   /**
      #swagger.tags = ["Group"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -108,9 +102,6 @@ export async function createGroup(req: Request, res: Response) {
   /**
      #swagger.tags = ["Group"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -183,9 +174,6 @@ export async function leaveGroup(req: Request, res: Response) {
   /**
      #swagger.tags = ["Group"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -229,9 +217,6 @@ export async function getGroupMembers(req: Request, res: Response) {
   /**
      #swagger.tags = ["Group"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -258,9 +243,6 @@ export async function addParticipant(req: Request, res: Response) {
   /**
      #swagger.tags = ["Group"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -322,9 +304,6 @@ export async function removeParticipant(req: Request, res: Response) {
   /**
      #swagger.tags = ["Group"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -388,9 +367,6 @@ export async function promoteParticipant(req: Request, res: Response) {
   /**
      #swagger.tags = ["Group"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -449,9 +425,6 @@ export async function demoteParticipant(req: Request, res: Response) {
   /**
      #swagger.tags = ["Group"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -510,9 +483,6 @@ export async function getGroupAdmins(req: Request, res: Response) {
   /**
      #swagger.tags = ["Group"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -564,9 +534,6 @@ export async function getGroupInviteLink(req: Request, res: Response) {
   /**
      #swagger.tags = ["Group"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -606,9 +573,6 @@ export async function revokeGroupInviteLink(req: Request, res: Response) {
   /**
      #swagger.tags = ["Group"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -653,9 +617,6 @@ export async function getAllBroadcastList(req: Request, res: Response) {
   /**
      #swagger.tags = ["Misc"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -677,9 +638,6 @@ export async function getGroupInfoFromInviteLink(req: Request, res: Response) {
   /**
      #swagger.tags = ["Group"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -715,9 +673,6 @@ export async function getGroupMembersIds(req: Request, res: Response) {
   /**
      #swagger.tags = ["Group"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -746,9 +701,6 @@ export async function setGroupDescription(req: Request, res: Response) {
   /**
      #swagger.tags = ["Group"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -791,9 +743,6 @@ export async function setGroupProperty(req: Request, res: Response) {
   /**
      #swagger.tags = ["Group"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -837,9 +786,6 @@ export async function setGroupSubject(req: Request, res: Response) {
   /**
      #swagger.tags = ["Group"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -882,9 +828,6 @@ export async function setMessagesAdminsOnly(req: Request, res: Response) {
   /**
      #swagger.tags = ["Group"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -927,9 +870,6 @@ export async function changePrivacyGroup(req: Request, res: Response) {
   /**
      #swagger.tags = ["Group"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -977,9 +917,6 @@ export async function setGroupProfilePic(req: Request, res: Response) {
   /**
      #swagger.tags = ["Group"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -1030,9 +967,6 @@ export async function getCommonGroups(req: Request, res: Response) {
   /**
      #swagger.tags = ["Group"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -1057,7 +991,6 @@ export async function getGroupInfo(req: Request, res: Response) {
   /**
     #swagger.tags = ["Group"]
     #swagger.autoBody=false
-    #swagger.security = [{ "bearerAuth": [] }]
     #swagger.parameters["session"] = { schema: 'NERDWHATS_AMERICA' }
     #swagger.parameters["groupId"] = { schema: '<groupId>' }
     #swagger.summary = 'Get detailed information about a group'

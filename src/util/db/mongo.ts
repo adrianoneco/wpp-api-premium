@@ -15,8 +15,13 @@ async function getConnection(instanceName: string): Promise<mongoose.Connection>
   return connections[instanceName];
 }
 
+const noLid = {
+  validator: (v: string) => !v || !v.endsWith('@lid'),
+  message: 'wa_id must not end with @lid',
+};
+
 const contactSchema = new mongoose.Schema({
-  wa_id: { type: String, index: true, unique: true, sparse: true },
+  wa_id: { type: String, index: true, unique: true, sparse: true, validate: noLid },
   phone: String,
   name: String,
   pushname: String,
@@ -25,7 +30,7 @@ const contactSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 const messageSchema = new mongoose.Schema({
-  wa_id: { type: String, index: true, unique: true, sparse: true },
+  wa_id: { type: String, index: true, unique: true, sparse: true, validate: noLid },
   session: String,
   chat_id: String,
   author: String,
@@ -38,7 +43,7 @@ const messageSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 const fileSchema = new mongoose.Schema({
-  wa_id: { type: String, index: true, unique: true, sparse: true },
+  wa_id: { type: String, index: true, unique: true, sparse: true, validate: noLid },
   original_name: String,
   stored_path: String,
   session: String,

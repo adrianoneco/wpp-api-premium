@@ -29,10 +29,6 @@ export async function backupAllSessions(req: Request, res: Response) {
      * #swagger.produces = ['application/octet-stream']
      * #swagger.consumes = ['application/octet-stream']
        #swagger.autoBody=false
-       #swagger.parameters["secretkey"] = {
-          required: true,
-          schema: 'THISISMYSECURETOKEN'
-       }
        #swagger.responses[200] = {
         description: 'A ZIP file contaings your backup. Please, open this link in your browser',
         content: {
@@ -42,14 +38,6 @@ export async function backupAllSessions(req: Request, res: Response) {
         },
       }
      */
-  const { secretkey } = req.params;
-
-  if (secretkey !== config.secretKey) {
-    res.status(400).json({
-      response: 'error',
-      message: 'The token is incorrect',
-    });
-  }
 
   try {
     res.setHeader('Content-Type', 'application/zip');
@@ -67,10 +55,6 @@ export async function restoreAllSessions(req: Request, res: Response) {
   /**
    #swagger.tags = ["Misc"]
    #swagger.autoBody=false
-    #swagger.parameters["secretkey"] = {
-    required: true,
-    schema: 'THISISMYSECURETOKEN'
-    }
     #swagger.requestBody = {
       required: true,
       content: {
@@ -89,14 +73,6 @@ export async function restoreAllSessions(req: Request, res: Response) {
       }
     }
   */
-  const { secretkey } = req.params;
-
-  if (secretkey !== config.secretKey) {
-    res.status(400).json({
-      response: 'error',
-      message: 'The token is incorrect',
-    });
-  }
 
   try {
     const result = await restoreSessions(req, req.file as any);
@@ -114,9 +90,6 @@ export async function takeScreenshot(req: Request, res: Response) {
   /**
    #swagger.tags = ["Misc"]
    #swagger.autoBody=false
-    #swagger.security = [{
-          "bearerAuth": []
-    }]
     #swagger.parameters["session"] = {
     schema: 'NERDWHATS_AMERICA'
     }
@@ -138,24 +111,14 @@ export async function clearSessionData(req: Request, res: Response) {
   /**
    #swagger.tags = ["Misc"]
    #swagger.autoBody=false
-    #swagger.parameters["secretkey"] = {
-    required: true,
-    schema: 'THISISMYSECURETOKEN'
-    }
     #swagger.parameters["session"] = {
     schema: 'NERDWHATS_AMERICA'
     }
   */
 
   try {
-    const { secretkey, session } = req.params;
+    const { session } = req.params;
 
-    if (secretkey !== config.secretKey) {
-      res.status(400).json({
-        response: 'error',
-        message: 'The token is incorrect',
-      });
-    }
     if (req?.client?.page) {
       delete clientsArray[req.params.session];
       await req.client.logout();
@@ -186,9 +149,6 @@ export async function setLimit(req: Request, res: Response) {
    #swagger.tags = ["Misc"]
    #swagger.description = 'Change limits of whatsapp web. Types value: maxMediaSize, maxFileSize, maxShare, statusVideoMaxDuration, unlimitedPin;'
    #swagger.autoBody=false
-    #swagger.security = [{
-          "bearerAuth": []
-    }]
     #swagger.parameters["session"] = {
     schema: 'NERDWHATS_AMERICA'
     }

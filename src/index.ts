@@ -212,7 +212,7 @@ export function initServer(serverOptions: Partial<ServerOptions>): {
     sock.on('sessions.getAll', async () => {
       logger.info(formatEventLog(null, 'websocket', 'Received sessions.getAll'));
       try {
-        const url = `${API_HOST}/api/${serverOptions.secretKey}/show-all-sessions`;
+        const url = `${API_HOST}/api/show-all-sessions`;
         const resp = await axios.get(url);
         sock.emit('sessions.getAll.response', { ok: true, data: resp.data });
         logger.info(formatEventLog(null, 'websocket', 'sessions.getAll responded'));

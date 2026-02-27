@@ -35,9 +35,6 @@ export async function sendMessage(req: Request, res: Response) {
   /**
    * #swagger.tags = ["Messages"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -112,9 +109,6 @@ export async function editMessage(req: Request, res: Response) {
   /**
    * #swagger.tags = ["Messages"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -159,9 +153,6 @@ export async function sendFile(req: Request, res: Response) {
   /**
    * #swagger.tags = ["Messages"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -243,9 +234,6 @@ export async function sendVoice(req: Request, res: Response) {
   /**
    * #swagger.tags = ["Messages"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -309,9 +297,6 @@ export async function sendVoice64(req: Request, res: Response) {
   /**
    * #swagger.tags = ["Messages"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -367,9 +352,6 @@ export async function sendLinkPreview(req: Request, res: Response) {
   /**
    * #swagger.tags = ["Messages"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -421,9 +403,6 @@ export async function sendLocation(req: Request, res: Response) {
   /**
    * #swagger.tags = ["Messages"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -484,9 +463,6 @@ export async function sendButtons(req: Request, res: Response) {
   /**
    * #swagger.tags = ["Messages"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA',
      }
@@ -514,9 +490,6 @@ export async function sendListMessage(req: Request, res: Response) {
   /**
    * #swagger.tags = ["Messages"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA',
      }
@@ -598,9 +571,6 @@ export async function sendOrderMessage(req: Request, res: Response) {
   /**
    * #swagger.tags = ["Messages"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -699,9 +669,6 @@ export async function sendPollMessage(req: Request, res: Response) {
   /**
    * #swagger.tags = ["Messages"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -760,9 +727,6 @@ export async function sendStatusText(req: Request, res: Response) {
   /**
    * #swagger.tags = ["Messages"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -811,9 +775,6 @@ export async function replyMessage(req: Request, res: Response) {
   /**
    * #swagger.tags = ["Messages"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -864,9 +825,6 @@ export async function sendMentioned(req: Request, res: Response) {
   /**
    * #swagger.tags = ["Messages"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -924,9 +882,6 @@ export async function sendImageAsSticker(req: Request, res: Response) {
   /**
    * #swagger.tags = ["Messages"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -982,9 +937,6 @@ export async function sendImageAsStickerGif(req: Request, res: Response) {
   /**
    * #swagger.tags = ["Messages"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -1041,9 +993,6 @@ export async function sendPixMessage(req: Request, res: Response) {
   /**
    * #swagger.tags = ["Messages"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }

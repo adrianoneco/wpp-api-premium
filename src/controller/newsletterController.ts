@@ -37,9 +37,6 @@ export async function createNewsletter(req: Request, res: Response) {
      * #swagger.tags = ["Newsletter]
         #swagger.operationId = 'createNewsletter'
        #swagger.autoBody=false
-       #swagger.security = [{
-              "bearerAuth": []
-       }]
        #swagger.parameters["session"] = {
         schema: 'NERDWHATS_AMERICA'
        }
@@ -84,9 +81,6 @@ export async function editNewsletter(req: Request, res: Response) {
        * #swagger.tags = ["Newsletter]
          #swagger.operationId = 'editNewsletter'
          #swagger.autoBody=false
-         #swagger.security = [{
-                "bearerAuth": []
-         }]
          #swagger.parameters["session"] = {
           schema: 'NERDWHATS_AMERICA'
          }
@@ -149,9 +143,6 @@ export async function destroyNewsletter(req: Request, res: Response) {
  * #swagger.tags = ["Newsletter]
     #swagger.autoBody=false
     #swagger.operationId = 'destroyNewsletter'
-    #swagger.security = [{
-            "bearerAuth": []
-    }]
     #swagger.parameters["session"] = {
         schema: 'NERDWHATS_AMERICA'
     }
@@ -174,9 +165,6 @@ export async function muteNewsletter(req: Request, res: Response) {
    * #swagger.tags = ["Newsletter]
      #swagger.operationId = 'muteNewsletter'
      #swagger.autoBody=false
-     #swagger.security = [{
-              "bearerAuth": []
-      }]
       #swagger.parameters["session"] = {
           schema: 'NERDWHATS_AMERICA'
       }

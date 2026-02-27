@@ -29,6 +29,18 @@ export async function syncSession(client: any, req: any) {
 
   const { Contact, Message } = mongoModels;
 
+  // Sanitize keys that start with $ (MongoDB rejects them)
+  function sanitizeForMongo(obj: any): any {
+    if (obj === null || obj === undefined || typeof obj !== 'object') return obj;
+    if (Array.isArray(obj)) return obj.map(sanitizeForMongo);
+    const out: any = {};
+    for (const [k, v] of Object.entries(obj)) {
+      const safeKey = k.startsWith('$') ? k.replace(/^\$+/, '_') : k;
+      out[safeKey] = sanitizeForMongo(v);
+    }
+    return out;
+  }
+
   // ─── Step 1: Save contacts ───────────────────────────────────────────
   let contacts: any[] = [];
   try {
@@ -40,14 +52,14 @@ export async function syncSession(client: any, req: any) {
         const rawId = c?.id?._serialized
           || (c?.id?.user ? `${c.id.user}@${c.id.server || 'c.us'}` : '')
           || (typeof c?.id === 'string' ? c.id : '');
-        if (!rawId) continue;
+        if (!rawId || c?.id?.server !== 'c.us') continue;
 
         const phone = rawId.split('@')[0];
         const name = c.name || c.verifiedName || c.pushname || null;
 
         await Contact.updateOne(
           { wa_id: rawId },
-          { $set: { wa_id: rawId, name, pushname: c.pushname || null, phone, raw: c } },
+          { $set: { wa_id: rawId, name, pushname: c.pushname || null, phone, raw: sanitizeForMongo(c) } },
           { upsert: true }
         );
       } catch (e: any) {
@@ -86,13 +98,22 @@ export async function syncSession(client: any, req: any) {
         msgs = (await client.getAllMessagesInChat(chatId, true, false)) || [];
       }
     } catch (e: any) {
-      log('error', `Failed to fetch messages for ${chatId}: ` + (e?.message || e));
-      continue;
+      // Some chats have malformed messages internally; try limited fetch as fallback
+      log('warn', `Failed to fetch all messages for ${chatId}: ${e?.message || e} — trying limited fetch`);
+      try {
+        if (typeof client.getMessages === 'function') {
+          msgs = (await client.getMessages(chatId, { count: 100 })) || [];
+        }
+      } catch {
+        log('warn', `Skipping chat ${chatId}: unable to fetch messages`);
+        continue;
+      }
     }
 
     for (const msg of msgs) {
       try {
         const msgId = msg?.id?._serialized || msg?.id || `${chatId}-${msg?.t || Date.now()}`;
+        if (typeof msgId === 'string' && msgId.endsWith('@lid')) continue;
         const isMedia = !!(msg.mimetype || msg.isMedia || msg.isMMS);
 
         // Extract phone number
@@ -118,7 +139,7 @@ export async function syncSession(client: any, req: any) {
               timestamp: msg.t || null,
               is_media: isMedia,
               media_path: null,
-              raw: msg,
+              raw: sanitizeForMongo(msg),
             },
           },
           { upsert: true }
@@ -138,12 +159,19 @@ export async function syncSession(client: any, req: any) {
   try {
     const { downloadQueue } = await import('../queues/client');
 
-    // 3a. Contact profile photos (only @c.us contacts)
+    // 3a. Contact profile photos (only @c.us contacts, skip if already downloaded)
     let picCount = 0;
+    let picSkipped = 0;
     for (const c of contacts) {
       const contactId = c?.id?._serialized
         || (c?.id?.user ? `${c.id.user}@${c.id.server || 'c.us'}` : '');
       if (!contactId || !contactId.endsWith('@c.us')) continue;
+
+      // Skip if DB already has profile_pic path
+      try {
+        const existing = await Contact.findOne({ wa_id: contactId, profile_pic: { $ne: null } }, { _id: 1 }).lean();
+        if (existing) { picSkipped++; continue; }
+      } catch {}
 
       await downloadQueue.add(
         'profile-pic',
@@ -158,10 +186,17 @@ export async function syncSession(client: any, req: any) {
       );
       picCount++;
     }
-    log('info', `Sync [${session}]: enqueued ${picCount} profile-pic downloads`);
+    log('info', `Sync [${session}]: enqueued ${picCount} profile-pic downloads (${picSkipped} already exist, skipped)`);
 
-    // 3b. Media attachments
+    // 3b. Media attachments (skip if already downloaded)
+    let mediaSkipped = 0;
     for (const msgId of mediaMessageIds) {
+      // Skip if DB already has media_path
+      try {
+        const existing = await Message.findOne({ wa_id: msgId, media_path: { $ne: null } }, { _id: 1 }).lean();
+        if (existing) { mediaSkipped++; continue; }
+      } catch {}
+
       await downloadQueue.add(
         'media',
         { type: 'media', msgId, session },
@@ -174,7 +209,7 @@ export async function syncSession(client: any, req: any) {
         }
       );
     }
-    log('info', `Sync [${session}]: enqueued ${mediaMessageIds.length} media downloads`);
+    log('info', `Sync [${session}]: enqueued ${mediaMessageIds.length - mediaSkipped} media downloads (${mediaSkipped} already exist, skipped)`);
   } catch (e: any) {
     log('error', 'Failed to enqueue download jobs: ' + (e?.message || e));
   }

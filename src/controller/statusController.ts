@@ -17,9 +17,6 @@ export async function sendTextStorie(req: Request, res: Response) {
   /**
      #swagger.tags = ["Status Stories"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -77,9 +74,6 @@ export async function sendImageStorie(req: Request, res: Response) {
   /**
      #swagger.tags = ["Status Stories"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -130,9 +124,6 @@ export async function sendVideoStorie(req: Request, res: Response) {
   /**
      #swagger.tags = ["Status Stories"]
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }

@@ -107,35 +107,11 @@ export async function startAllSessions(
    * #swagger.tags = ["Auth"]
      #swagger.autoBody=false
      #swagger.operationId = 'startAllSessions'
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
-     #swagger.parameters["secretkey"] = {
-      schema: 'THISISMYSECURECODE'
-     }
    */
-  const { secretkey } = req.params;
-  const { authorization: token } = req.headers;
-
-  let tokenDecrypt = '';
-
-  if (secretkey === undefined) {
-    tokenDecrypt = (token as any).split(' ')[0];
-  } else {
-    tokenDecrypt = secretkey;
-  }
-
   const allSessions = await getAllTokens(req);
-
-  if (tokenDecrypt !== req.serverOptions.secretKey) {
-    res.status(400).json({
-      response: 'error',
-      message: 'The token is incorrect',
-    });
-  }
 
   allSessions.map(async (session: string) => {
     const util = new CreateSessionUtil();
@@ -157,32 +133,8 @@ export async function showAllSessions(
      #swagger.operationId = 'showAllSessions'
      #swagger.autoQuery=false
      #swagger.autoHeaders=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
-     #swagger.parameters["secretkey"] = {
-      schema: 'THISISMYSECURETOKEN'
-     }
    */
-  const { secretkey } = req.params;
-  const { authorization: token } = req.headers;
-
-  let tokenDecrypt: any = '';
-
-  if (secretkey === undefined) {
-    tokenDecrypt = token?.split(' ')[0];
-  } else {
-    tokenDecrypt = secretkey;
-  }
-
   const arr: any = [];
-
-  if (tokenDecrypt !== req.serverOptions.secretKey) {
-    res.status(400).json({
-      response: false,
-      message: 'The token is incorrect',
-    });
-  }
 
   Object.keys(clientsArray).forEach((item) => {
     arr.push({ session: item });
@@ -196,9 +148,6 @@ export async function startSession(req: Request, res: Response): Promise<any> {
    * #swagger.tags = ["Auth"]
      #swagger.autoBody=false
      #swagger.operationId = 'startSession'
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -246,9 +195,6 @@ export async function closeSession(req: Request, res: Response): Promise<any> {
    * #swagger.tags = ["Auth"]
      #swagger.operationId = 'closeSession'
      #swagger.autoBody=true
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -287,9 +233,6 @@ export async function logOutSession(req: Request, res: Response): Promise<any> {
      #swagger.operationId = 'logoutSession'
    * #swagger.description = 'This route logout and delete session data'
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -359,9 +302,6 @@ export async function checkConnectionSession(
    * #swagger.tags = ["Auth"]
      #swagger.operationId = 'CheckConnectionState'
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -380,9 +320,6 @@ export async function downloadMediaByMessage(req: Request, res: Response) {
    * #swagger.tags = ["Messages"]
      #swagger.autoBody=false
      #swagger.operationId = 'downloadMediabyMessage'
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -447,9 +384,6 @@ export async function getMediaByMessage(req: Request, res: Response) {
    * #swagger.tags = ["Messages"]
      #swagger.autoBody=false
      #swagger.operationId = 'getMediaByMessage'
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -496,9 +430,6 @@ export async function getSessionState(req: Request, res: Response) {
      #swagger.operationId = 'getSessionState'
      #swagger.summary = 'Retrieve status of a session'
      #swagger.autoBody = false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -535,9 +466,6 @@ export async function getQrCode(req: Request, res: Response) {
    * #swagger.tags = ["Auth"]
      #swagger.autoBody=false
      #swagger.operationId = 'getQrCode'
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -590,9 +518,6 @@ export async function killServiceWorker(req: Request, res: Response) {
    * #swagger.tags = ["Messages"]
      #swagger.operationId = 'killServiceWorkier'
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -615,9 +540,6 @@ export async function restartService(req: Request, res: Response) {
    * #swagger.tags = ["Messages"]
      #swagger.operationId = 'restartService'
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -638,9 +560,6 @@ export async function subscribePresence(req: Request, res: Response) {
    * #swagger.tags = ["Misc"]
      #swagger.operationId = 'subscribePresence'
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -701,9 +620,6 @@ export async function setOnlinePresence(req: Request, res: Response) {
    * #swagger.tags = ["Misc"]
      #swagger.operationId = 'setOnlinePresence'
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
@@ -748,9 +664,6 @@ export async function editBusinessProfile(req: Request, res: Response) {
      #swagger.operationId = 'editBusinessProfile'
    * #swagger.description = 'Edit your bussiness profile'
      #swagger.autoBody=false
-     #swagger.security = [{
-            "bearerAuth": []
-     }]
      #swagger.parameters["session"] = {
       schema: 'NERDWHATS_AMERICA'
      }
