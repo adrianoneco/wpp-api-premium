@@ -81,6 +81,14 @@ const doc = {
       description:
         'Handles miscellaneous operations that do not fit into other specific categories.',
     },
+    {
+      name: 'Newsletter',
+      description: 'Manages newsletter/channel operations.',
+    },
+    {
+      name: 'Schedule',
+      description: 'Manages scheduled message sending.',
+    },
   ],
   definitions: {},
   components: {

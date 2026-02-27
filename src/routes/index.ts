@@ -28,6 +28,7 @@ import * as MessageController from '../controller/messageController';
 import * as MiscController from '../controller/miscController';
 import * as NewsletterController from '../controller/newsletterController';
 import * as OrderController from '../controller/orderController';
+import * as ScheduleController from '../controller/scheduleController';
 import * as SessionController from '../controller/sessionController';
 import * as StatusController from '../controller/statusController';
 import setSession from '../middleware/auth';
@@ -765,6 +766,7 @@ routes.get(
 );
 routes.get(
   '/api/:session/all-contacts',
+  // #swagger.tags = ["Contact"]
   setSession,
   statusConnection,
   DeviceController.getAllContacts
@@ -965,6 +967,38 @@ routes.post(
 
 routes.post('/api/:session/chatwoot', DeviceController.chatWoot);
 
+// Schedule
+routes.post(
+  '/api/:session/schedule',
+  setSession,
+  ScheduleController.createSchedule
+);
+routes.get(
+  '/api/:session/schedule',
+  setSession,
+  ScheduleController.listSchedules
+);
+routes.get(
+  '/api/:session/schedule/:id',
+  setSession,
+  ScheduleController.getSchedule
+);
+routes.put(
+  '/api/:session/schedule/:id',
+  setSession,
+  ScheduleController.updateSchedule
+);
+routes.post(
+  '/api/:session/schedule/:id/cancel',
+  setSession,
+  ScheduleController.cancelSchedule
+);
+routes.delete(
+  '/api/:session/schedule/:id',
+  setSession,
+  ScheduleController.deleteSchedule
+);
+
 // Api Doc
 routes.use('/api-docs', swaggerUi.serve as any);
 routes.get('/api-docs', (req, res) => {
@@ -993,10 +1027,10 @@ routes.get('/api-docs', (req, res) => {
     delete doc.security;
     if (doc.components) delete doc.components.securitySchemes;
 
-    // Remove generate-token and secretkey routes
+    // Remove generate-token, secretkey and api-docs routes from swagger
     if (doc.paths) {
       for (const p of Object.keys(doc.paths)) {
-        if (p.includes('{secretkey}') || p.includes('generate-token')) {
+        if (p.includes('{secretkey}') || p.includes('generate-token') || p === '/api-docs') {
           delete doc.paths[p];
         }
       }

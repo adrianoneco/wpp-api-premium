@@ -219,15 +219,55 @@ export async function listChats(req: Request, res: Response) {
       withLabels,
     } = req.body;
 
-    const response = await req.client.listChats({
-      id: id,
-      count: count,
-      direction: direction,
-      onlyGroups: onlyGroups,
-      onlyUsers: onlyUsers,
-      onlyWithUnreadMessage: onlyWithUnreadMessage,
-      withLabels: withLabels,
-    });
+    let response: any;
+    try {
+      response = await req.client.listChats({
+        id: id,
+        count: count,
+        direction: direction,
+        onlyGroups: onlyGroups,
+        onlyUsers: onlyUsers,
+        onlyWithUnreadMessage: onlyWithUnreadMessage,
+        withLabels: withLabels,
+      });
+    } catch (widErr: any) {
+      if (
+        widErr?.message?.includes('invalid wid') ||
+        widErr?.name === 'InvalidWidError'
+      ) {
+        // Fallback: list chats skipping ones with invalid WIDs
+        response = await (req.client as any).page.evaluate(
+          (opts: any) => {
+            const _WPP = (window as any).WPP;
+            const _WAPI = (window as any).WAPI;
+            return _WPP.chat
+              .list(opts || {})
+              .then((chats: any[]) => {
+                const results: any[] = [];
+                for (const c of chats) {
+                  try {
+                    results.push(_WAPI._serializeChatObj(c));
+                  } catch (_) {
+                    // skip chats with invalid WID
+                  }
+                }
+                return results;
+              });
+          },
+          {
+            id,
+            count,
+            direction,
+            onlyGroups,
+            onlyUsers,
+            onlyWithUnreadMessage,
+            withLabels,
+          }
+        );
+      } else {
+        throw widErr;
+      }
+    }
 
     res.status(200).json(response);
   } catch (e) {
@@ -1772,23 +1812,11 @@ export async function getContact(req: Request, res: Response) {
 
 export async function getAllContacts(req: Request, res: Response) {
   /**
-   * #swagger.tags = ["Contact"]
-   * #swagger.summary = 'Listar contatos'
-   * #swagger.description = 'Retorna todos os contatos do WhatsApp (apenas contatos de usuário, ex. @c.us).'
-   * #swagger.autoBody=false
-   * #swagger.security = [{
-   * }]
-   * #swagger.parameters["session"] = { schema: 'NERDWHATS_AMERICA' }
-   * #swagger.responses[200] = {
-   *   description: 'Lista de contatos retornada com sucesso',
-   *   schema: {
-   *     type: 'object',
-   *     properties: {
-   *       status: { type: 'string' },
-   *       response: { type: 'array', items: { type: 'object' } }
-   *     }
-   *   }
-   * }
+     #swagger.tags = ["Contact"]
+     #swagger.autoBody=false
+     #swagger.parameters["session"] = {
+      schema: 'NERDWHATS_AMERICA'
+     }
    */
   try {
     let response = await req.client.getAllContacts();

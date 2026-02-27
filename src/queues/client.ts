@@ -9,5 +9,6 @@ const connection = {
 export const webhookQueue = new Queue('webhooks', { connection });
 export const uploadQueue = new Queue('uploads', { connection });
 export const downloadQueue = new Queue('downloads', { connection });
+export const scheduleQueue = new Queue('schedules', { connection });
 
-export default { webhookQueue, uploadQueue, downloadQueue };
+export default { webhookQueue, uploadQueue, downloadQueue, scheduleQueue };

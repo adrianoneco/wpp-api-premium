@@ -279,4 +279,85 @@ downloadWorker.on('failed', (job, err) => {
   logger.warn(formatEventLog(job?.data?.session || null, 'download', `Failed ${job?.data?.type} ${job?.data?.contactId || job?.data?.msgId}: ${msg}`));
 });
 
-export { webhookWorker, uploadWorker, downloadWorker, webHookScheduler, uploadScheduler, downloadScheduler };
+// ─── Schedule worker (delayed message sending) ───────────────────────
+const scheduleScheduler = new QueueScheduler('schedules', { connection });
+
+const scheduleWorker = new Worker(
+  'schedules',
+  async (job: Job) => {
+    const { scheduleId, session } = job.data || {};
+    if (!scheduleId || !session) throw new Error('Invalid schedule job: missing scheduleId or session');
+
+    const mongo = require('../util/db/mongo');
+    const { Schedule } = await mongo.getModels(session);
+
+    const doc = await Schedule.findById(scheduleId);
+    if (!doc) throw new Error(`Schedule ${scheduleId} not found`);
+
+    if (doc.status !== 'pending') {
+      logger.info(formatEventLog(session, 'schedule', `Skipping ${scheduleId} — status: ${doc.status}`));
+      return;
+    }
+
+    const client = (clientsArray as any)[session];
+    if (!client || !client.page) {
+      throw new Error(`Client for session "${session}" not connected`);
+    }
+
+    try {
+      let result: any;
+      const phone = doc.phone;
+      const message = doc.message || '';
+      const payload = doc.payload || {};
+
+      switch (doc.type) {
+        case 'text':
+          result = await client.sendText(phone, message);
+          break;
+        case 'file':
+          result = await client.sendFile(phone, payload.base64 || payload.path, {
+            filename: payload.filename || 'file',
+            caption: message,
+          });
+          break;
+        case 'image':
+          result = await client.sendFile(phone, payload.base64 || payload.path, {
+            filename: payload.filename || 'image.jpg',
+            caption: message,
+          });
+          break;
+        case 'location':
+          result = await client.sendLocation(
+            phone,
+            { lat: payload.lat, lng: payload.lng, title: payload.title, address: payload.address }
+          );
+          break;
+        case 'link':
+          result = await client.sendLinkPreview(phone, payload.url, message);
+          break;
+        default:
+          result = await client.sendText(phone, message);
+      }
+
+      doc.status = 'sent';
+      doc.result = result;
+      doc.sentAt = new Date();
+      await doc.save();
+
+      logger.info(formatEventLog(session, 'schedule', `Sent ${doc.type} to ${phone} (${scheduleId})`));
+    } catch (err: any) {
+      doc.status = 'failed';
+      doc.error = extractErrorMessage(err);
+      await doc.save();
+      throw err;
+    }
+  },
+  { connection, concurrency: 2 }
+);
+
+scheduleWorker.on('failed', (job, err) => {
+  const msg = extractErrorMessage(err);
+  logger.warn(formatEventLog(job?.data?.session || null, 'schedule', `Failed schedule ${job?.data?.scheduleId}: ${msg}`));
+});
+
+export { webhookWorker, uploadWorker, downloadWorker, scheduleWorker, webHookScheduler, uploadScheduler, downloadScheduler, scheduleScheduler };
