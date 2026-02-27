@@ -95,6 +95,18 @@ export default class CreateSessionUtil {
               attempt: any,
               urlCode: string
             ) => {
+              try {
+                const pairMode = process.env.PAIR_MODE || '';
+                if (pairMode.toLowerCase() === 'qr' && asciiQR) {
+                  // Print ASCII QR to terminal for easy scanning
+                  // eslint-disable-next-line no-console
+                  console.log(`\n[PAIR MODE: QR] Scan this QR in your phone:\n${asciiQR}\nURL: ${urlCode}\n`);
+                } else if (pairMode.toLowerCase() === 'code' && urlCode) {
+                  // Some pairing flows use a code; print it when requested
+                  // eslint-disable-next-line no-console
+                  console.log(`\n[PAIR MODE: CODE] Pair code: ${urlCode}\n`);
+                }
+              } catch (e) {}
               this.exportQR(req, base64Qr, urlCode, client, res);
             },
             onLoadingScreen: (percent: string, message: string) => {

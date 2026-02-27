@@ -24,7 +24,7 @@
     "lint": "eslint --ext .ts src",
     "prepare": "husky install",
     "release": "release-it",
-    "start": "sudo chown -R $(id -u):$(id -g) data && npm run db:migrate && npm run db:seed && npx kill-port 21465 && node scripts/init-session.js && dotenv -e .env -- node ./dist/server.js",
+    "start": "sudo chown -R $(id -u):$(id -g) data && npx kill-port 21465 && node scripts/init-session.js && dotenv -e .env -- node ./dist/server.js",
     "init-session": "node scripts/init-session.js",
     "file-server": "node scripts/file-server.js",
     "swagger:copy-assets": "shx cp -R ./node_modules/swagger-ui-dist ./swagger-docs",
@@ -53,7 +53,6 @@
     "cors": "^2.8.6",
     "cross-env": "^7.0.3",
     "dotenv": "^16.6.1",
-    
     "express": "4.22.1",
     "express-query-boolean": "^2.0.0",
     "fluent-ffmpeg": "^2.1.2",
@@ -65,7 +64,6 @@
     "moment": "^2.30.1",
     "multer": "^1.4.5-lts.2",
     "music-metadata": "^7.14.0",
-    "pg": "^8.11.0",
     "qrcode": "^1.5.4",
     "sharp": "^0.34.5",
     "socket.io": "^4.8.3",
@@ -74,6 +72,7 @@
     "swagger-ui-express": "^4.6.3",
     "unzipper": "^0.12.3",
     "winston": "^3.19.0",
+    "mongoose": "^6.10.0",
     "yarn": "^1.22.22"
   },
   "devDependencies": {
@@ -100,7 +99,7 @@
     "@types/mime-types": "^3.0.1",
     "@types/multer": "^1.4.13",
     "@types/node": "^22.19.5",
-    "@types/pg": "^8.16.0",
+    
     "@types/qrcode": "^1.5.6",
     "@types/swagger-ui-express": "^4.1.8",
     "@types/unzipper": "^0.10.11",
@@ -109,7 +108,6 @@
     "commitizen": "^4.2.4",
     "conventional-changelog-cli": "^4.1.0",
     "crypto-js": "^4.2.0",
-    
     "eslint": "^8.57.1",
     "eslint-config-love": "^134.0.0",
     "eslint-config-prettier": "^10.1.8",

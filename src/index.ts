@@ -40,7 +40,6 @@ import {
   setMaxListners,
   startAllSessions,
 } from './util/functions';
-import { ensureSchema } from './sync/syncService';
 import { createLogger } from './util/logger';
 
 //require('dotenv').config();
@@ -245,14 +244,8 @@ export function initServer(serverOptions: Partial<ServerOptions>): {
     );
     logger.info(`WPPConnect-Server version: ${version}`);
 
-    // Try to create/update DB schema on startup (best-effort)
+    // Start sessions (MongoDB is used for persistence)
     setImmediate(async () => {
-      try {
-        const ok2 = await ensureSchema(logger);
-        if (ok2) logger.info('Postgres schema ensured (legacy)');
-      } catch (e) {
-        logger.warn('Error ensuring Postgres schema: ' + (e as any).message || e);
-      }
       if (serverOptions.startAllSession) startAllSessions(serverOptions, logger);
     });
 

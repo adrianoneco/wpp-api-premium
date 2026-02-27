@@ -16,8 +16,16 @@ try {
 }
 import { parseFile } from 'music-metadata';
 import { formatEventLog } from '../util/logFormat';
-import pool from '../util/db/postgres';
 import crypto from 'crypto';
+// Mongo will be used for file metadata
+let mongoGetModels: any = null;
+try {
+  // lazy require to avoid startup failures when MONGO not configured
+  const mg = require('../util/db/mongo');
+  mongoGetModels = mg.getModels;
+} catch (e) {
+  mongoGetModels = null;
+}
 
 if (ffprobePath) ffmpeg.setFfprobePath(ffprobePath);
 
@@ -59,7 +67,7 @@ router.get('/list/:session', (req, res) => {
 // Upload single file (used by worker)
 // Expects form-data: file, session, destPath
 // #swagger.tags = ["Storage"]
-router.post('/upload', upload.single('file'), async (req, res) => {
+router.post('/upload', (upload.single('file') as any), async (req, res) => {
   if (!checkKey(req)) return res.status(401).json({ error: 'Unauthorized' });
   const file = req.file as Express.Multer.File | undefined;
   const session = (req.body.session as string) || '';
@@ -87,15 +95,15 @@ router.post('/upload', upload.single('file'), async (req, res) => {
     fs.mkdirSync(dir, { recursive: true });
     fs.renameSync(file.path, target);
 
-    // insert metadata into files table (best-effort)
+    // insert metadata into MongoDB per-instance files collection (best-effort)
     try {
       const relPath = path.relative(root, target);
-      await pool.query(
-        'INSERT INTO files(id, original_name, stored_path, session, mime, size, created_at) VALUES($1,$2,$3,$4,$5,$6,NOW())',
-        [id, file.originalname, relPath, session || null, file.mimetype || null, file.size || 0]
-      );
+      if (mongoGetModels) {
+        const { File } = await mongoGetModels(session || (process.env.SESSION_NAME || 'default'));
+        await File.updateOne({ wa_id: id }, { $set: { wa_id: id, original_name: file.originalname, stored_path: relPath, session: session || null, mime: file.mimetype || null, size: file.size || 0 } }, { upsert: true });
+      }
     } catch (dbErr: any) {
-      console.warn('Failed to insert file metadata:', dbErr?.message || dbErr);
+      console.warn('Failed to insert file metadata into MongoDB:', dbErr?.message || dbErr);
     }
 
     return res.json({ ok: true, id, path: target });
@@ -112,7 +120,7 @@ router.post('/upload', upload.single('file'), async (req, res) => {
 
 // Upload multiple files
 // #swagger.tags = ["Storage"]
-router.post('/upload/multiple', upload.array('files'), (req, res) => {
+router.post('/upload/multiple', (upload.array('files') as any), (req, res) => {
   if (!checkKey(req)) return res.status(401).json({ error: 'Unauthorized' });
   const files = req.files as Express.Multer.File[] | undefined;
   const session = (req.body.session as string) || '';

@@ -5,6 +5,7 @@ import path from 'path';
 import FormData from 'form-data';
 import { formatEventLog } from '../util/logFormat';
 import { createLogger } from '../util/logger';
+import { clientsArray } from '../util/sessionUtil';
 
 const connection = {
   host: process.env.REDIS_HOST || '127.0.0.1',
@@ -91,15 +92,24 @@ webhookWorker.on('failed', (job, err) => {
 const uploadWorker = new Worker(
   'uploads',
   async (job: Job) => {
-    const { tmpPath, destPath, session } = job.data;
-    if (!tmpPath || !destPath) throw new Error('Invalid upload job data');
+    const { tmpPath, destPath, session } = job.data || {};
+    // destPath may be an empty string when callers want the storage service
+    // to generate the final filename (syncService passes ''). Require only tmpPath.
+    if (!tmpPath) {
+      // Log full job payload for debugging before failing
+      try {
+        logger.warn(formatEventLog((job as any)?.data?.session || session || null, 'upload', `Invalid upload job data payload: ${JSON.stringify(job.data)}`));
+      } catch {}
+      throw new Error('Invalid upload job data: missing tmpPath');
+    }
 
     // storage service config
     const storageHost = process.env.STORAGE_HOST || 'localhost';
     const storagePort = process.env.STORAGE_PORT || '80';
     const storageSecret = process.env.STORAGE_SECRET_KEY || '';
     const protocol = process.env.STORAGE_PROTOCOL || 'http';
-    const uploadUrl = `${protocol}://${storageHost}:${storagePort}/upload`;
+    // storage routes are mounted under /storage on the main server
+    const uploadUrl = `${protocol}://${storageHost}:${storagePort}/storage/upload`;
 
     // stream file and post as multipart/form-data
     const form = new FormData();
@@ -123,7 +133,119 @@ const uploadWorker = new Worker(
 );
 
 uploadWorker.on('failed', (job, err) => {
-  logger.warn(formatEventLog(job?.data?.session || null, 'upload', `Failed upload ${job?.data?.destPath}: ${err?.message || err}`));
+  try {
+    logger.warn(formatEventLog(job?.data?.session || null, 'upload', `Failed upload ${job?.data?.destPath}: ${err?.message || err} payload=${JSON.stringify(job?.data)}`));
+  } catch (e) {
+    logger.warn(formatEventLog(job?.data?.session || null, 'upload', `Failed upload ${job?.data?.destPath}: ${err?.message || err}`));
+  }
 });
 
-export { webhookWorker, uploadWorker, webHookScheduler, uploadScheduler };
+// ─── Download worker (profile pics & media attachments) ───────────────
+const downloadScheduler = new QueueScheduler('downloads', { connection });
+
+const STORAGE_DIR = process.env.STORAGE_PATH || path.join(process.cwd(), 'data', 'uploads');
+
+const downloadWorker = new Worker(
+  'downloads',
+  async (job: Job) => {
+    const { type, session } = job.data || {};
+    if (!type || !session) throw new Error('Invalid download job: missing type or session');
+
+    const client = (clientsArray as any)[session];
+    if (!client || !client.page) {
+      throw new Error(`Client for session "${session}" not connected`);
+    }
+
+    if (type === 'profile-pic') {
+      await handleProfilePic(job, client, session);
+    } else if (type === 'media') {
+      await handleMediaDownload(job, client, session);
+    } else {
+      throw new Error(`Unknown download job type: ${type}`);
+    }
+  },
+  { connection, concurrency: 2 }
+);
+
+async function handleProfilePic(job: Job, client: any, session: string) {
+  const { contactId } = job.data;
+  if (!contactId) throw new Error('Missing contactId');
+
+  const pic = await client.getProfilePicFromServer(contactId);
+  if (!pic || (!pic.imgFull && !pic.eurl)) {
+    logger.info(formatEventLog(session, 'download', `No profile pic for ${contactId}`));
+    return;
+  }
+
+  const url = pic.imgFull || pic.eurl;
+  const resp = await axios.get(url, { responseType: 'arraybuffer', timeout: 30000 });
+
+  const dir = path.join(STORAGE_DIR, 'profile-pics');
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+  const filename = contactId.replace(/[@.:]/g, '_') + '.jpg';
+  const filePath = path.join(dir, filename);
+  fs.writeFileSync(filePath, resp.data);
+
+  // Update contact in MongoDB
+  try {
+    const mongo = require('../util/db/mongo');
+    const { Contact } = await mongo.getModels(session);
+    await Contact.updateOne({ wa_id: contactId }, { $set: { profile_pic: filePath } });
+  } catch {}
+
+  logger.info(formatEventLog(session, 'download', `Profile pic saved for ${contactId}`));
+}
+
+async function handleMediaDownload(job: Job, client: any, session: string) {
+  const { msgId } = job.data;
+  if (!msgId) throw new Error('Missing msgId');
+
+  // Retrieve the message object from WhatsApp
+  const msg = await client.getMessageById(msgId);
+  if (!msg) throw new Error(`Message ${msgId} not found`);
+
+  let buffer: Buffer | null = null;
+  let ext = '';
+
+  // Try decryptFile first (returns Buffer), fallback to downloadMedia (returns base64)
+  try {
+    buffer = await client.decryptFile(msg);
+  } catch {
+    try {
+      const b64 = await client.downloadMedia(msg);
+      if (b64 && typeof b64 === 'string') {
+        buffer = Buffer.from(b64, 'base64');
+      }
+    } catch {}
+  }
+
+  if (!buffer || buffer.length === 0) {
+    throw new Error(`Could not download media for message ${msgId}`);
+  }
+
+  const mime = msg.mimetype || '';
+  ext = mime.split('/').pop()?.split(';')[0] || 'bin';
+
+  const dir = path.join(STORAGE_DIR, 'media');
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+  const safeId = String(msgId).replace(/[^a-zA-Z0-9_-]/g, '_');
+  const filename = `${safeId}.${ext}`;
+  const filePath = path.join(dir, filename);
+  fs.writeFileSync(filePath, buffer);
+
+  // Update message in MongoDB
+  try {
+    const mongo = require('../util/db/mongo');
+    const { Message } = await mongo.getModels(session);
+    await Message.updateOne({ wa_id: msgId }, { $set: { media_path: filePath } });
+  } catch {}
+
+  logger.info(formatEventLog(session, 'download', `Media saved for ${msgId} → ${filename}`));
+}
+
+downloadWorker.on('failed', (job, err) => {
+  const msg = extractErrorMessage(err);
+  logger.warn(formatEventLog(job?.data?.session || null, 'download', `Failed ${job?.data?.type} ${job?.data?.contactId || job?.data?.msgId}: ${msg}`));
+});
+
+export { webhookWorker, uploadWorker, downloadWorker, webHookScheduler, uploadScheduler, downloadScheduler };

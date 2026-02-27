@@ -1,267 +1,185 @@
-import fs from 'fs';
-import path from 'path';
-import pool from '../util/db/postgres';
-import config from '../config';
-
-export async function ensureSchema(logger?: any) {
-  try {
-    await pool.query(`
-    CREATE TABLE IF NOT EXISTS contacts (
-      id TEXT PRIMARY KEY,
-      name TEXT,
-      pushname TEXT,
-      phone TEXT,
-      raw JSONB
-    );
-
-    CREATE TABLE IF NOT EXISTS messages (
-      id TEXT PRIMARY KEY,
-      session TEXT,
-      chat_id TEXT,
-      author TEXT,
-      phone TEXT,
-      body TEXT,
-      timestamp BIGINT,
-      is_media BOOLEAN,
-      media_path TEXT,
-      raw JSONB
-    );
-  `);
-    return true;
-  } catch (e: any) {
-    try {
-      let msg = '';
-      // Handle AggregateError (common when multiple connection attempts fail)
-      if (typeof AggregateError !== 'undefined' && e instanceof AggregateError) {
-        msg = (e as AggregateError).errors
-          .map((er: any) => (er && er.message ? er.message : String(er)))
-          .join('; ');
-      } else {
-        msg = e && e.message ? e.message : String(e);
-      }
-      const out = 'Postgres unavailable, skipping DB sync: ' + msg;
-      if (logger && typeof logger.warn === 'function') {
-        logger.warn(out);
-      } else {
-        console.warn(out);
-      }
-    } catch { }
-    return false;
-  }
-}
-
-async function saveFile(
-  session: string,
-  msgId: string,
-  buffer: Buffer,
-  ext = ''
-): Promise<string> {
-  // If STORAGE_PATH is configured, store attachments there; otherwise use project data/uploads
-  const storagePath = process.env.STORAGE_PATH || null;
-  if (storagePath) {
-    // write to a temporary location and enqueue upload job
-    const tmpDir = path.join(process.cwd(), 'tmp', 'uploads');
-    if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir, { recursive: true });
-    const filename = `${msgId}${ext ? '.' + ext : ''}`;
-    const tmpFile = path.join(tmpDir, filename);
-    fs.writeFileSync(tmpFile, buffer);
-    // enqueue upload job but let the storage service generate the UUID-based name
-    // we provide an empty destPath so storage will use session + generated UUID filename
-    // compute fallback destination (used only if enqueue fails)
-    const fallbackDestDir = path.join(storagePath, session);
-    const fallbackDest = path.join(fallbackDestDir, filename);
-    try {
-      const { uploadQueue } = await import('../queues/client');
-      await uploadQueue.add(
-        'upload',
-        { tmpPath: tmpFile, destPath: '', session },
-        { attempts: 5, backoff: { type: 'exponential', delay: 2000 }, removeOnComplete: true }
-      );
-    } catch (err) {
-      // fallback: try to move synchronously to storage/session
-      try {
-        if (!fs.existsSync(fallbackDestDir)) fs.mkdirSync(fallbackDestDir, { recursive: true });
-        fs.renameSync(tmpFile, fallbackDest);
-        return fallbackDest;
-      } catch (e) {
-        return tmpFile;
-      }
-    }
-    return tmpFile;
-  }
-
-  const dataDir = (config as any).dataDir || './data';
-  const uploadsDir = path.join(process.cwd(), dataDir, 'uploads', session);
-  if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
-  const filename = `${msgId}${ext ? '.' + ext : ''}`;
-  const full = path.join(uploadsDir, filename);
-  fs.writeFileSync(full, buffer);
-  return full;
-}
-
 export async function syncSession(client: any, req: any) {
+  const session: string = client.session || process.env.SESSION_NAME || 'default';
+  const log = (level: string, msg: string) => {
+    try { req.logger?.[level]?.(msg); } catch { console.log(`[sync] ${level}: ${msg}`); }
+  };
+
+  // Verify client is connected
   try {
-    const dbAvailable = await ensureSchema(req?.logger);
-
-    // Sync contacts with @c.us
-    try {
-      const contacts = (await client.getAllContacts()) || [];
-      for (const c of contacts) {
-        try {
-          const rawId =
-            c && (c.id || c.id?.user || c._serialized)
-              ? c.id ||
-              c._serialized ||
-              (c.id && c.id.user ? c.id.user + '@c.us' : '')
-              : '';
-          if (String(rawId).endsWith('@c.us')) {
-            const id = typeof rawId === 'string' ? rawId : String(rawId);
-            const name = c.name || c.notify || c.pushname || null;
-            const phone = id.split('@')[0];
-            if (dbAvailable) {
-              try {
-                await pool.query(
-                  `INSERT INTO contacts(id,name,pushname,phone,raw) VALUES($1,$2,$3,$4,$5)
-           ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, pushname = EXCLUDED.pushname, phone = EXCLUDED.phone, raw = EXCLUDED.raw;`,
-                  [id, name, c.pushname || null, phone, JSON.stringify(c)]
-                );
-              } catch (dbErr: any) {
-                req.logger.error(
-                  'Failed to insert/update contact: ' +
-                  (dbErr && dbErr.message ? dbErr.message : String(dbErr)) +
-                  ' contact=' +
-                  id
-                );
-              }
-            }
-          }
-        } catch (inner: any) {
-          req.logger.error(
-            'Error processing contact during sync: ' +
-            (inner && inner.message ? inner.message : String(inner))
-          );
-        }
-      }
-    } catch (eContacts: any) {
-      req.logger.error(
-        'Failed to fetch contacts for sync: ' +
-        (eContacts && eContacts.message
-          ? eContacts.message
-          : String(eContacts))
-      );
+    const connected = await client.isConnected();
+    if (!connected) {
+      log('warn', `Sync [${session}]: client not connected, skipping sync`);
+      return;
     }
+  } catch (e: any) {
+    log('warn', `Sync [${session}]: cannot verify connection, skipping sync: ${e?.message || e}`);
+    return;
+  }
 
-    // Sync chats and messages
-    // Prefer using the non-deprecated `listChats`. If unavailable, fall back
-    // to older APIs (`getAllChatsWithMessages`, `getAllChats`).
-    let chats: any[] = [];
+  // Initialize MongoDB models
+  let mongoModels: any;
+  try {
+    const mongo = await import('../util/db/mongo');
+    mongoModels = await mongo.getModels(session);
+    log('info', `Sync [${session}]: MongoDB connected (db: ${session})`);
+  } catch (e: any) {
+    log('error', `Sync [${session}]: MongoDB init failed, aborting: ${e?.message || e}`);
+    return;
+  }
+
+  const { Contact, Message } = mongoModels;
+
+  // ─── Step 1: Save contacts ───────────────────────────────────────────
+  let contacts: any[] = [];
+  try {
+    contacts = (await client.getAllContacts()) || [];
+    log('info', `Sync [${session}]: fetched ${contacts.length} contacts`);
+
+    for (const c of contacts) {
+      try {
+        const rawId = c?.id?._serialized
+          || (c?.id?.user ? `${c.id.user}@${c.id.server || 'c.us'}` : '')
+          || (typeof c?.id === 'string' ? c.id : '');
+        if (!rawId) continue;
+
+        const phone = rawId.split('@')[0];
+        const name = c.name || c.verifiedName || c.pushname || null;
+
+        await Contact.updateOne(
+          { wa_id: rawId },
+          { $set: { wa_id: rawId, name, pushname: c.pushname || null, phone, raw: c } },
+          { upsert: true }
+        );
+      } catch (e: any) {
+        log('error', 'Error saving contact: ' + (e?.message || e));
+      }
+    }
+    log('info', `Sync [${session}]: contacts saved`);
+  } catch (e: any) {
+    log('error', 'Failed to fetch/save contacts: ' + (e?.message || e));
+  }
+
+  // ─── Step 2: Save conversations ─────────────────────────────────────
+  let chats: any[] = [];
+  try {
+    if (typeof client.listChats === 'function') {
+      chats = (await client.listChats()) || [];
+    } else if (typeof client.getAllChats === 'function') {
+      chats = (await client.getAllChats()) || [];
+    }
+    log('info', `Sync [${session}]: fetched ${chats.length} chats`);
+  } catch (e: any) {
+    log('error', 'Failed to fetch chats: ' + (e?.message || e));
+  }
+
+  const mediaMessageIds: string[] = [];
+
+  for (const chat of chats) {
+    const chatId = chat?.id?._serialized || (typeof chat?.id === 'string' ? chat.id : '');
+    if (!chatId) continue;
+
+    let msgs: any[] = [];
     try {
-      if (typeof client.listChats === 'function') {
-        // request basic list of chats; messages will be fetched per-chat
-        try {
-          chats = (await client.listChats({})) || [];
-        } catch (le: any) {
-          req.logger.error(
-            'listChats failed: ' + (le && le.message ? le.message : String(le))
-          );
-          chats = [];
-        }
-      } else if (typeof client.getAllChatsWithMessages === 'function') {
-        // legacy method that returns chats with messages
-        chats = (await client.getAllChatsWithMessages(true)) || [];
-      } else if (typeof client.getAllChats === 'function') {
-        chats = (await client.getAllChats()) || [];
-      } else {
-        chats = [];
+      if (typeof client.getMessages === 'function') {
+        msgs = (await client.getMessages(chatId, { count: -1 })) || [];
+      } else if (typeof client.getAllMessagesInChat === 'function') {
+        msgs = (await client.getAllMessagesInChat(chatId, true, false)) || [];
       }
     } catch (e: any) {
-      req.logger.error(
-        'Failed to fetch chats for sync: ' + (e && e.message ? e.message : e)
-      );
-      chats = [];
+      log('error', `Failed to fetch messages for ${chatId}: ` + (e?.message || e));
+      continue;
     }
 
-    for (const chat of chats) {
-      const chatId =
-        chat && chat.id ? chat.id._serialized || chat.id : chat.id || chat;
+    for (const msg of msgs) {
+      try {
+        const msgId = msg?.id?._serialized || msg?.id || `${chatId}-${msg?.t || Date.now()}`;
+        const isMedia = !!(msg.mimetype || msg.isMedia || msg.isMMS);
 
-      // Normalize messages array: try multiple possible sources
-      let msgs: any[] = [];
-      if (Array.isArray(chat.msgs)) msgs = chat.msgs;
-      else if (typeof client.getAllMessagesInChat === 'function' && chatId)
-        msgs = (await client.getAllMessagesInChat(chatId)) || [];
+        // Extract phone number
+        const rawSrc = msg.to || msg.author || msg.from || chatId || '';
+        let phone = '';
+        if (typeof rawSrc === 'string') {
+          phone = rawSrc.includes('@') ? rawSrc.split('@')[0] : rawSrc;
+        } else {
+          const s = (rawSrc?._serialized || rawSrc?.id || '').toString();
+          phone = s.includes('@') ? s.split('@')[0] : s;
+        }
 
-      if (!Array.isArray(msgs) || msgs.length === 0) continue;
+        await Message.updateOne(
+          { wa_id: msgId },
+          {
+            $setOnInsert: {
+              wa_id: msgId,
+              session,
+              chat_id: chatId,
+              author: msg.author || msg.from || null,
+              phone: phone || null,
+              body: msg.body || msg.caption || null,
+              timestamp: msg.t || null,
+              is_media: isMedia,
+              media_path: null,
+              raw: msg,
+            },
+          },
+          { upsert: true }
+        );
 
-      for (const msg of msgs) {
-        const msgId = msg.id
-          ? msg.id._serialized || msg.id
-          : `${chatId}-${msg.t}`;
-        let mediaPath: string | null = null;
-        let isMedia = !!(msg['mimetype'] || msg.isMedia || msg.isMMS);
         if (isMedia) {
-          try {
-            const buffer = await client.decryptFile(msg);
-            const ext = msg.mimetype ? msg.mimetype.split('/').pop() : '';
-            mediaPath = await saveFile(client.session, msgId, buffer, ext);
-          } catch (e) {
-            // fallback: try downloadMedia
-            try {
-              const buf2 = await client.downloadMedia(msg);
-              const ext = msg.mimetype ? msg.mimetype.split('/').pop() : '';
-              mediaPath = await saveFile(client.session, msgId, buf2, ext);
-            } catch (e2) {
-              mediaPath = null;
-            }
-          }
+          mediaMessageIds.push(msgId);
         }
-
-        if (dbAvailable) {
-          try {
-            // derive a normalized phone number (strip @* suffixes)
-            const rawPhoneSource = msg.author || msg.from || chatId || '';
-            const phone = typeof rawPhoneSource === 'string' ? rawPhoneSource.split('@')[0] : '';
-            await pool.query(
-              `INSERT INTO messages(id,session,chat_id,author,phone,body,timestamp,is_media,media_path,raw)
-                             VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
-                             ON CONFLICT (id) DO NOTHING;`,
-              [
-                msgId,
-                client.session,
-                chatId,
-                msg.author || msg.from || null,
-                phone || null,
-                msg.body || msg.caption || null,
-                msg.t || Date.now(),
-                isMedia,
-                mediaPath,
-                JSON.stringify(msg),
-              ]
-            );
-          } catch (e: any) {
-            req.logger.error(
-              'Failed to insert message into DB: ' +
-              (e && e.message ? e.message : e)
-            );
-          }
-        }
+      } catch (e: any) {
+        log('error', 'Failed to save message: ' + (e?.message || e));
       }
     }
-
-    req.logger.info(`Sync finished for session ${client.session}`);
-  } catch (e: any) {
-    try {
-      // log as much detail as possible
-      if (e && e.stack) req.logger.error('Sync error: ' + e.stack);
-      else
-        req.logger.error(
-          'Sync error: ' + (e && e.message ? e.message : JSON.stringify(e))
-        );
-    } catch (er) {
-      // fallback: console
-      try {
-        console.error('Sync fatal error', e, er);
-      } catch { }
-    }
   }
+  log('info', `Sync [${session}]: messages saved (${mediaMessageIds.length} with media)`);
+
+  // ─── Step 3: Schedule downloads via BullMQ ──────────────────────────
+  try {
+    const { downloadQueue } = await import('../queues/client');
+
+    // 3a. Contact profile photos (only @c.us contacts)
+    let picCount = 0;
+    for (const c of contacts) {
+      const contactId = c?.id?._serialized
+        || (c?.id?.user ? `${c.id.user}@${c.id.server || 'c.us'}` : '');
+      if (!contactId || !contactId.endsWith('@c.us')) continue;
+
+      await downloadQueue.add(
+        'profile-pic',
+        { type: 'profile-pic', contactId, session },
+        {
+          attempts: 3,
+          backoff: { type: 'fixed', delay: 60000 },
+          removeOnComplete: true,
+          removeOnFail: false,
+          jobId: `pic-${session}-${contactId}`,
+        }
+      );
+      picCount++;
+    }
+    log('info', `Sync [${session}]: enqueued ${picCount} profile-pic downloads`);
+
+    // 3b. Media attachments
+    for (const msgId of mediaMessageIds) {
+      await downloadQueue.add(
+        'media',
+        { type: 'media', msgId, session },
+        {
+          attempts: 3,
+          backoff: { type: 'fixed', delay: 60000 },
+          removeOnComplete: true,
+          removeOnFail: false,
+          jobId: `media-${session}-${msgId}`,
+        }
+      );
+    }
+    log('info', `Sync [${session}]: enqueued ${mediaMessageIds.length} media downloads`);
+  } catch (e: any) {
+    log('error', 'Failed to enqueue download jobs: ' + (e?.message || e));
+  }
+
+  log('info', `Sync finished for session ${session}`);
 }
+
+export default { syncSession };

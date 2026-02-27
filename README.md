@@ -1,66 +1,66 @@
-# WPPConnect Team
+# WPP-ZAPI
 
-## _WPPConnect Server_
+API REST para automação do WhatsApp Web com suporte a multi-sessões.
 
-![WPPConnect-SERVER](https://i.imgur.com/y1ts6RR.png)
+---
 
-[![npm version](https://img.shields.io/npm/v/@wppconnect/server.svg?color=green)](https://www.npmjs.com/package/@wppconnect/server)
-[![Downloads](https://img.shields.io/npm/dm/@wppconnect/server.svg)](https://www.npmjs.com/package/@wppconnect/server)
-[![Average time to resolve an issue](https://isitmaintained.com/badge/resolution/wppconnect-team/wppconnect-server.svg)](https://isitmaintained.com/project/wppconnect-team/wppconnect-server 'Average time to resolve an issue')
-[![Percentage of issues still open](https://isitmaintained.com/badge/open/wppconnect-team/wppconnect-server.svg)](https://isitmaintained.com/badge/open/wppconnect-team/wppconnect-server.svg 'Percentage of issues still open')
-[![Build Status](https://img.shields.io/github/actions/workflow/status/wppconnect-team/wppconnect-server/build.yml)](https://github.com/wppconnect-team/wppconnect-server/actions)
-[![Build](https://github.com/wppconnect-team/wppconnect-server/actions/workflows/build.yml/badge.svg)](https://github.com/wppconnect-team/wppconnect-server/actions/workflows/build.yml)
-[![release-it](https://img.shields.io/badge/%F0%9F%93%A6%F0%9F%9A%80-release--it-e10079.svg)](https://github.com/release-it/release-it)
+## Tecnologias
 
-Welcome to the **WPPConnect Server** repository, developed by the WPPConnect Team. Our mission is to provide a robust and ready-to-use API for seamless communication with WhatsApp. The server is designed to streamline the process of sending and receiving messages, managing contacts, creating groups, and much more, all while leveraging the power of JavaScript ES6, NodeJS, and a RESTful architecture.
+| | Tecnologia | Função |
+|---|---|---|
+| ![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white) | **Node.js 22** | Runtime JavaScript no servidor |
+| ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white) | **TypeScript** | Tipagem estática e compilação |
+| ![Express](https://img.shields.io/badge/Express-000000?style=for-the-badge&logo=express&logoColor=white) | **Express** | Framework HTTP para rotas e middlewares |
+| ![Socket.IO](https://img.shields.io/badge/Socket.IO-010101?style=for-the-badge&logo=socketdotio&logoColor=white) | **Socket.IO** | Comunicação em tempo real via WebSocket |
+| ![MongoDB](https://img.shields.io/badge/MongoDB-47A248?style=for-the-badge&logo=mongodb&logoColor=white) | **MongoDB 4.4** | Banco de dados para contatos, mensagens e arquivos |
+| ![Mongoose](https://img.shields.io/badge/Mongoose-880000?style=for-the-badge&logo=mongoose&logoColor=white) | **Mongoose** | ODM para modelagem e queries no MongoDB |
+| ![Redis](https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white) | **Redis 7** | Broker de filas para BullMQ (jobs em background) |
+| ![BullMQ](https://img.shields.io/badge/BullMQ-E34F26?style=for-the-badge&logo=bull&logoColor=white) | **BullMQ** | Filas de tarefas: webhooks, uploads e downloads de mídia |
+| ![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white) | **Docker Compose** | Orquestração dos serviços (MongoDB, Redis) |
+| ![Swagger](https://img.shields.io/badge/Swagger-85EA2D?style=for-the-badge&logo=swagger&logoColor=black) | **Swagger** | Documentação interativa da API |
+| ![WhatsApp](https://img.shields.io/badge/WPPConnect-25D366?style=for-the-badge&logo=whatsapp&logoColor=white) | **WPPConnect** | Biblioteca de automação do WhatsApp Web |
+| ![AWS S3](https://img.shields.io/badge/AWS_S3-569A31?style=for-the-badge&logo=amazons3&logoColor=white) | **AWS S3** | Storage externo opcional para arquivos e mídia |
+| ![Winston](https://img.shields.io/badge/Winston-231F20?style=for-the-badge&logo=winston&logoColor=white) | **Winston** | Logging estruturado com múltiplos transports |
+| ![Sharp](https://img.shields.io/badge/Sharp-99CC00?style=for-the-badge&logo=sharp&logoColor=black) | **Sharp** | Processamento e manipulação de imagens |
+| ![FFmpeg](https://img.shields.io/badge/FFmpeg-007808?style=for-the-badge&logo=ffmpeg&logoColor=white) | **Fluent-FFmpeg** | Processamento de áudio e vídeo |
+| ![Babel](https://img.shields.io/badge/Babel-F9DC3E?style=for-the-badge&logo=babel&logoColor=black) | **Babel** | Transpilação do TypeScript para JavaScript |
+| ![Jest](https://img.shields.io/badge/Jest-C21325?style=for-the-badge&logo=jest&logoColor=white) | **Jest** | Framework de testes automatizados |
+| ![ESLint](https://img.shields.io/badge/ESLint-4B32C3?style=for-the-badge&logo=eslint&logoColor=white) | **ESLint + Prettier** | Linting e formatação de código |
 
-- Javascript ES6
-- NodeJS
-- Restfull
+---
 
-## Our online channels
+## Arquitetura
 
-Connect with us across various platforms to stay updated and engage in discussions:
+```
+src/
+├── controller/     # Controllers da API (mensagens, contatos, grupos, etc.)
+├── middleware/      # Auth, health check, status de conexão
+├── routes/          # Rotas Express + storage
+├── queues/          # BullMQ: client (filas) e worker (processamento)
+├── sync/            # Sincronização de contatos e mensagens com MongoDB
+├── mapper/          # Mapeamento de dados (TagOne)
+├── util/
+│   ├── db/          # Conexão MongoDB (Mongoose)
+│   ├── tokenStore/  # Armazenamento de tokens de sessão
+│   └── ...          # Webhooks, logger, sessões
+└── types/           # Definições TypeScript
+```
 
-[![Discord](https://img.shields.io/discord/844351092758413353?color=blueviolet&label=Discord&logo=discord&style=flat)](https://discord.gg/JU5JGGKGNG)
-[![Telegram Group](https://img.shields.io/badge/Telegram-Group-32AFED?logo=telegram)](https://t.me/wppconnect)
-[![WhatsApp Group](https://img.shields.io/badge/WhatsApp-Group-25D366?logo=whatsapp)](https://chat.whatsapp.com/LJaQu6ZyNvnBPNAVRbX00K)
-[![YouTube](https://img.shields.io/youtube/channel/subscribers/UCD7J9LG08PmGQrF5IS7Yv9A?label=YouTube)](https://www.youtube.com/c/wppconnect)
+## Variáveis de Ambiente
 
-## Documentations
+| Variável | Descrição |
+|---|---|
+| `MONGO_URI` | URI de conexão do MongoDB |
+| `REDIS_HOST` | Host do Redis |
+| `REDIS_PORT` | Porta do Redis |
+| `REDIS_PASSWORD` | Senha do Redis |
+| `SESSION_NAME` | Nome da sessão padrão |
+| `STORAGE_PATH` | Caminho local para armazenamento de arquivos |
+| `WEBHOOK_URL` | URL para envio de webhooks |
+| `SECRET_KEY` | Chave secreta para autenticação da API |
+| `STORAGE_SECRET_KEY` | Chave secreta do serviço de storage |
 
-Detailed documentation and guides are available for your convenience:
-
-- [Postman](https://documenter.getpostman.com/view/9139457/TzshF4jQ)
-- [Swagger](https://wppconnect.io/swagger/wppconnect-server)
-- Swagger UI can be accessed on your server through the route: "IP:PORT/api-docs"
-
-## Features
-
-|                                      |     |
-| ------------------------------------ | --- |
-| Multiple Sessions                    | ✔   |
-| Send **text, image, video and docs** | ✔   |
-| Get **contacts list**                | ✔   |
-| Manage products                      | ✔   |
-| Receive/Send messages                | ✔   |
-| Open/Close Session                   | ✔   |
-| Change Profile/Username              | ✔   |
-| Create Group                         | ✔   |
-| Join Group by Invite Code            | ✔   |
-| Webhook                              | ✔   |
-
-## Libraries Used
-
-- WPPConnect
-- Axios
-- Bcrypt
-- Cors
-- Dotenv
-- Express
-- Nodemon
-- SocketIO
-- S3
+---
 
 ## Installation
 
